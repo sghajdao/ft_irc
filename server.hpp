@@ -24,19 +24,16 @@ class Server {
         int _port;
         string _password;
         map<int, User *> _allUser;
-        // map<string, Channel *> _allChannel;
         vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
-        // Command _command;
 
         Server(void);
         Server(const Server& server);
         Server& operator=(const Server& server);
 
-        void initKqueue(void);
         void updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 
-        void acceptNewClient(void);
+        void createNewClientSocket(void);
 
     public:
         Server(int port, string password);

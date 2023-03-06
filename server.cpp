@@ -22,11 +22,6 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
         shutDown("listen() error");
 }
 
-void Server::initKqueue(void) {
-    if ((_kq = kqueue()) == -1)
-        throw(runtime_error("kqueue() error"));
-}
-
 void Server::updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata) {
 	struct kevent event;
 
@@ -34,15 +29,15 @@ void Server::updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t f
 	eventList.push_back(event);
 }
 
-void Server::acceptNewClient(void) {
+void Server::createNewClientSocket(void) {
 	int clientSocket;
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
 	char hostStr[INET_ADDRSTRLEN];
 	User *user;
 
-	memset(&clientAddr, 0, sizeof(clientAddr));
 	memset(hostStr, 0, sizeof(hostStr));
+	memset(&clientAddr, 0, sizeof(clientAddr));
 	if ((clientSocket = accept(_sd, (struct sockaddr *)&clientAddr, &addrLen)) == -1) {
 		cerr << "aceept() failed! Check errno : " << errno << endl;
 		errno = 0;
@@ -68,7 +63,8 @@ void Server::acceptNewClient(void) {
 void Server::run() {
 	int numOfEvents;
 	
-	initKqueue();
+	if ((_kq = kqueue()) == -1)
+        throw(runtime_error("kqueue() error"));
 	cout << "listening..." << endl;
 	while (1) {
         numOfEvents = kevent(_kq, &eventList[0], eventList.size(), _waitingEvents, 8, NULL);
@@ -92,7 +88,7 @@ void Server::handleEvent(const struct kevent& event) {
 		}
 	} else if (event.filter == EVFILT_READ) {
 		if (event.ident == (const uintptr_t)_sd)
-			acceptNewClient();}
+			createNewClientSocket();}
 }
 
 void Server::shutDown(const string& msg) {
