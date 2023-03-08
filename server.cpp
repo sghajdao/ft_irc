@@ -77,6 +77,29 @@ void Server::run() {
     }
 }
 
+void Server::recvClientData(const struct kevent& event) {
+	char buf[513];
+	map<int, User *>::iterator it = _allUser.find(event.ident);
+	User* targetUser = it->second;
+	int recvBytes;
+
+	if (it == _allUser.end()) return ;
+
+	recvBytes = recv(event.ident, buf, 512, 0);
+	if (recvBytes <= 0) {
+		if (recvBytes == -1 && errno == EAGAIN) {
+			errno = 0;
+			return;
+		}
+		cerr << "client recv error!" << endl;
+		_allUser.erase(event.ident);
+		// DISCONNECT THE CLIENT
+	} else {
+		buf[recvBytes] = '\0';
+		targetUser->addToCmdBuffer(buf);
+	}
+}
+
 void Server::handleEvent(const struct kevent& event) {
 	if (event.flags & EV_ERROR) {
 		if (event.ident == (const uintptr_t)_sd)
@@ -88,7 +111,9 @@ void Server::handleEvent(const struct kevent& event) {
 		}
 	} else if (event.filter == EVFILT_READ) {
 		if (event.ident == (const uintptr_t)_sd)
-			createNewClientSocket();}
+			createNewClientSocket();
+		else
+			recvClientData(event);}
 }
 
 void Server::shutDown(const string& msg) {
