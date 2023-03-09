@@ -27,6 +27,7 @@ class Server {
         vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
 
+    public:
         Server(void);
         Server(const Server& server);
         Server& operator=(const Server& server);
@@ -35,7 +36,6 @@ class Server {
 
         void createNewClientSocket(void);
 
-    public:
         Server(int port, string password);
         void recvClientData(const struct kevent& event);
         void sendDataToClient(const struct kevent& event);

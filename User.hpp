@@ -18,11 +18,11 @@ class User {
 		string _replyBuffer;
 		bool _isQuiting;
 
+	public:
 		User(void);
 		User(const User& user);
 		User& operator=(const User& user);
 
-	public:
         User(int fd, const string& host);
 		~User();
 		
