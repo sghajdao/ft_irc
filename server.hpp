@@ -38,6 +38,7 @@ class Server {
     public:
         Server(int port, string password);
         void recvClientData(const struct kevent& event);
+        void sendDataToClient(const struct kevent& event);
         void handleEvent(const struct kevent& event);
         void run(void);
         void shutDown(const string& msg);

@@ -93,10 +93,32 @@ void Server::recvClientData(const struct kevent& event) {
 		}
 		cerr << "client recv error!" << endl;
 		_allUser.erase(event.ident);
-		// DISCONNECT THE CLIENT
+		cout << "client disconnected: " << event.ident << '\n';
 	} else {
 		buf[recvBytes] = '\0';
 		targetUser->addToCmdBuffer(buf);
+	}
+}
+
+void Server::sendDataToClient(const struct kevent& event) {
+	map<int, User *>::iterator it = _allUser.find(event.ident);
+	User* targetUser = it->second;
+	int sendBytes;
+
+	if (it == _allUser.end()) return ;
+	if (targetUser->getReplyBuffer().empty()) return;
+
+	sendBytes = send(event.ident, targetUser->getReplyBuffer().c_str(), targetUser->getReplyBuffer().length(), 0);
+	if (sendBytes == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			errno = 0;
+			return ;
+		}
+		cerr << "client send error!" << endl; 
+	} else {
+
+		targetUser->setReplyBuffer(targetUser->getReplyBuffer().substr(sendBytes));
+		if (targetUser->getIsQuiting() && targetUser->getReplyBuffer().empty()) _allUser.erase(event.ident);
 	}
 }
 
