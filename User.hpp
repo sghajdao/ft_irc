@@ -11,9 +11,8 @@ class User {
 		int _sd;
 		string _host;
 		string _password;
-		string _nickname; // unique
+		string _nickname;
 		string _username;
-		bool _auth;
 		string _cmdBuffer;
 		string _replyBuffer;
 		bool _isQuiting;
@@ -49,7 +48,6 @@ class User {
 		void clearReplyBuffer(void);
 		void addToCmdBuffer(const string& src);
 		void addToReplyBuffer(const string& src);
-		// void clearMyChannelList(void);
 
 };
 

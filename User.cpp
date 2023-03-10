@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include "User.hpp"
 
-User::User(int fd, const string& host) : _sd(fd), _host(host), _auth(false), _isQuiting(false) { }
+User::User(int fd, const string& host) : _sd(fd), _host(host), _isQuiting(false) { }
 
 User::~User() {
     close(_sd);
@@ -37,10 +37,6 @@ const string& User::getUsername(void) const {
     return _username;
 }
 
-bool User::getAuth(void) const {
-    return _auth;
-}
-
 const string& User::getCmdBuffer(void) const {
     return _cmdBuffer;
 }
@@ -63,10 +59,6 @@ void User::setNickname(const string& nickname) {
 
 void User::setUsername(const string& username) {
     _username = username;
-}
-
-void User::setAuth(void) {
-    _auth = true;
 }
 
 void User::setCmdBuffer(const string& str) {

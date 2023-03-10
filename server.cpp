@@ -53,8 +53,8 @@ void Server::createNewClientSocket(void) {
 	cout << "accept new client: " << clientSocket << " / Host : " << hostStr << endl;
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
 
-	updateEvents(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	updateEvents(clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	updateEvents(clientSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	updateEvents(clientSocket, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 
 	user = new User(clientSocket, hostStr);
 	_allUser.insert(make_pair(clientSocket, user));
@@ -78,14 +78,14 @@ void Server::run() {
 }
 
 void Server::recvClientData(const struct kevent& event) {
-	char buf[513];
+	char buf[501];
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 	int recvBytes;
 
 	if (it == _allUser.end()) return ;
 
-	recvBytes = recv(event.ident, buf, 512, 0);
+	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
 		if (recvBytes == -1 && errno == EAGAIN) {
 			errno = 0;
