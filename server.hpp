@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 01:47:53 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/13 21:55:06 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define SERVER_HPP
 
 # include <string>
+# include <ctime>
 # include <map>
 # include <exception>
 #include <iostream>
@@ -59,8 +60,11 @@ class Server {
         void sendMessage(User *user, const struct kevent& event, std::string msg, int code);
         void checkUser(std::vector<string> tab, User* user, const struct kevent& event);
         void checkNick(std::vector<string> tab, User* user, const struct kevent& event);
+        void authentication(std::vector<string> tab, User* user, const struct kevent& event);
+        void sendMessageWelcom(string buffer, User* user, const struct kevent& event);
         int  checkUserExist(std::vector<string> tab, User* user, const struct kevent& event);
         int	 checkNickExist(vector<string> tab, User* user, const struct kevent& event);
+
 };
 
 #endif

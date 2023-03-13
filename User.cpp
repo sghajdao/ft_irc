@@ -37,6 +37,18 @@ const string& User::getUsername(void) const {
     return _username;
 }
 
+const string& User::getHostname(void) const {
+    return _hostname;
+}
+
+const string& User::getServername(void) const {
+    return _servername;
+}
+
+const string& User::getRealname(void) const {
+    return _realname;
+}
+
 const string& User::getCmdBuffer(void) const {
     return _cmdBuffer;
 }
@@ -52,8 +64,13 @@ bool User::getIsQuiting(void) const {
 bool User::getIsUser(void) const {
     return _user;
 }
+
 bool User::getIsPass(void) const {
     return _pass;
+}
+
+bool User::getIsNick(void) const {
+    return _nick;
 }
 
 void User::setPassword(const string& pwd) {
@@ -66,6 +83,18 @@ void User::setNickname(const string& nickname) {
 
 void User::setUsername(const string& username) {
     _username = username;
+}
+
+void User::setHostname(const string& hostname) {
+    _hostname = hostname;
+}
+
+void User::setServername(const string& servername) {
+    _servername = servername;
+}
+
+void User::setRealname(const string& realname) {
+    _realname = realname;
 }
 
 void User::setCmdBuffer(const string& str) {
@@ -104,6 +133,10 @@ void User::setIsPass(void) {
     _pass = true;
 }
 
+void User::setIsNick(void) {
+    _nick = true;
+}
+
 int  User::getRegistred(void) const
 {
     return (registred);
@@ -111,5 +144,5 @@ int  User::getRegistred(void) const
 
 void User::setRegistred(void)
 {
-    registred += 1;
+    registred = true;
 }

@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:55:19 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 13:28:39 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/13 15:21:36 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 #define ERR_ALREADYREGISTERED " :You may not reregister"
 
 #define ERROR " :There is more parameters"
-#define ERR_REGISTERED " :Yoy must registred entre command <PASS> <USER> <NICK>"
+#define ERR_REGISTERED " :You must registred entre command <PASS> <USER> <NICK>"
 
 
 #endif
