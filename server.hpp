@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 01:47:53 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/13 16:35:07 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ class Server {
         int _kq;
         int _port;
         string _password;
+        string _command;
+        vector<string> _params;
         map<int, User *> _allUser;
         vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
@@ -61,6 +63,10 @@ class Server {
         void checkNick(std::vector<string> tab, User* user, const struct kevent& event);
         int  checkUserExist(std::vector<string> tab, User* user, const struct kevent& event);
         int	 checkNickExist(vector<string> tab, User* user, const struct kevent& event);
+        void handleCmd(User *user, const struct kevent& event);
+        size_t checkCmd(User *user);
+        void findCmd(string cmd);
+        vector<string> split(const string& str, const char delimeter);
 };
 
 #endif
