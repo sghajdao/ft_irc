@@ -1,10 +1,21 @@
-#include <iostream>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
+/*   Updated: 2023/03/13 14:34:13 by ibenmain         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "messagerror.hpp"
 #include "server.hpp"
 #include "User.hpp"
 
 Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _password(password) {
 	struct sockaddr_in serverAddr;
-
 	if ((_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		shutDown("socket() error");
 	
@@ -12,9 +23,9 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_port = htons(_port);
-	fcntl(_sd, F_SETFL, O_NONBLOCK);
+	if (fcntl(_sd, F_SETFL, O_NONBLOCK) < 0)
+		shutDown("fcntl() error");
 	updateEvents(_sd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-
 	if (::bind(_sd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
         shutDown("bind() error");
 
@@ -24,7 +35,7 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
 
 void Server::updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata) {
 	struct kevent event;
-
+	/* initialize a struct kevent object, which is used to represent an event */
 	EV_SET(&event, socket, filter, flags, fflags, data, udata);
 	eventList.push_back(event);
 }
@@ -62,7 +73,7 @@ void Server::createNewClientSocket(void) {
 
 void Server::run() {
 	int numOfEvents;
-	
+
 	if ((_kq = kqueue()) == -1)
         throw(runtime_error("kqueue() error"));
 	cout << "listening..." << endl;
@@ -70,7 +81,6 @@ void Server::run() {
         numOfEvents = kevent(_kq, &eventList[0], eventList.size(), _waitingEvents, 8, NULL);
         if (numOfEvents == -1)
             shutDown("kevent() error");
-	
         eventList.clear();
         for (int i = 0; i < numOfEvents; ++i)
             handleEvent(_waitingEvents[i]);
@@ -84,7 +94,6 @@ void Server::recvClientData(const struct kevent& event) {
 	int recvBytes;
 
 	if (it == _allUser.end()) return ;
-
 	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
 		if (recvBytes == -1 && errno == EAGAIN) {
@@ -97,7 +106,133 @@ void Server::recvClientData(const struct kevent& event) {
 	} else {
 		buf[recvBytes] = '\0';
 		targetUser->addToCmdBuffer(buf);
+		Server::parssingCommand(targetUser, event);
 	}
+	targetUser->clearCmdBuffer();
+}
+
+std::string	stringTolower(std::string str)
+{
+	transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return(str);
+}
+
+void	Server::sendMessage(User *user, const struct kevent& event, std::string msg, int code)
+{
+	int sendBytes;
+	std::string name = user->getNickname();
+	name = ":" + name + " * " + to_string(code) + msg + "\n";
+	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
+	if (sendBytes <= 0) {
+		if (sendBytes == -1 && errno == EAGAIN) {
+			errno = 0;
+			return;
+		}
+		cerr << "client send error!" << endl;
+		_allUser.erase(event.ident);
+		cout << "client disconnected: " << event.ident << '\n';
+	}
+}
+
+void	Server::checkPassword(std::vector<string> tab, User *user, const struct kevent& event)
+{
+	if (tab.size() < 2)
+	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	else if(tab.size() > 2)
+	 	sendMessage(user, event, ERROR, 404);
+	else
+	{
+		if (tab[1].compare(getpassword()) == 0)
+		{
+	 		user->setPassword(tab[1]);
+			user->setIsPass();
+		}
+		else
+	 		sendMessage(user, event, ERR_PASSWDMISMATCH, 464);
+	}
+}
+
+int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent& event)
+{
+	map<int, User *>::iterator it = _allUser.begin();
+	for (; it != _allUser.end(); it++)
+	{
+		if (tab[1].compare(it->second->getUsername()) == 0)
+			return (1);
+	}
+	return (0);
+}
+
+int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent& event)
+{
+	map<int, User *>::iterator it = _allUser.begin();
+	for (; it != _allUser.end(); it++)
+	{
+		if (tab[1].compare(it->second->getNickname()) == 0)
+			return (1);
+	}
+	return (0);
+}
+
+void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent& event)
+{
+	if (tab.size() < 5)
+	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	else if(tab.size() > 5)
+	 	sendMessage(user, event, ERROR, 404);
+	else
+	{
+		if (checkUserExist(tab, user, event))
+			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
+		else
+		{
+	 		user->setUsername(tab[1]);
+			user->setIsUser();
+		}
+	}
+}
+
+void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent& event)
+{
+	if (tab.size() < 2)
+	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	else if(tab.size() > 2)
+	 	sendMessage(user, event, ERROR, 404);
+	else
+	{
+		if (checkNickExist(tab, user, event))
+			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
+		else
+	 		user->setNickname(tab[1]);
+	}
+}
+
+void	Server::parssingCommand(User* user, const struct kevent& event)
+{
+	string		cmd;
+	vector<string> tab;
+	string command = user->getCmdBuffer();
+	command.erase(std::remove(command.begin(), command.end(), '\n'), command.cend());
+	if (command.empty())
+		return ;
+	char *token = strtok((char *)command.c_str(), " ");
+	while (token != NULL)
+	{
+		tab.push_back(token);
+		token = strtok(NULL, " ");
+	}
+	cmd = stringTolower(tab[0]);
+	if (cmd != "pass" && cmd != "user" && cmd != "nick")
+		sendMessage(user, event, ERR_REGISTERED, 000);
+	else if (cmd == "pass" && cmd == "user" && cmd == "nick"){
+		if (cmd.compare("pass") == 0 && !user->getIsPass())
+			Server::checkPassword(tab, user, event);
+		else if(cmd.compare("user") == 0 && !user->getIsUser())
+			Server::checkUser(tab, user, event);
+		else if(cmd.compare("nick") == 0)
+			Server::checkNick(tab, user, event);
+	}
+	user->clearCmdBuffer();
 }
 
 void Server::sendDataToClient(const struct kevent& event) {
@@ -148,4 +283,9 @@ void Server::shutDown(const string& msg) {
 	}
 	cerr << msg << endl;
 	exit(EXIT_FAILURE);
+}
+
+std::string Server::getpassword()
+{
+	return(_password);
 }

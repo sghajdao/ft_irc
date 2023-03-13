@@ -49,6 +49,13 @@ bool User::getIsQuiting(void) const {
     return _isQuiting;
 }
 
+bool User::getIsUser(void) const {
+    return _user;
+}
+bool User::getIsPass(void) const {
+    return _pass;
+}
+
 void User::setPassword(const string& pwd) {
     _password = pwd;
 }
@@ -87,4 +94,22 @@ void User::addToReplyBuffer(const string& str) {
 
 void User::setIsQuiting(void) {
     _isQuiting = true;
+}
+
+void User::setIsUser(void) {
+    _user = true;
+}
+
+void User::setIsPass(void) {
+    _pass = true;
+}
+
+int  User::getRegistred(void) const
+{
+    return (registred);
+}
+
+void User::setRegistred(void)
+{
+    registred += 1;
 }

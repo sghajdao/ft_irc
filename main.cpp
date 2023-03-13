@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    int port = 4200;
+    int port = stoi(std::string(argv[1]));
     Server ircServer(port, argv[2]);
 
     cout << "Server created" << endl;
