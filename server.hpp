@@ -6,9 +6,10 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 21:55:06 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/14 11:52:58 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
@@ -38,6 +39,8 @@ class Server {
         int _kq;
         int _port;
         string _password;
+        string _command;
+        vector<string> _params;
         map<int, User *> _allUser;
         vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
@@ -55,7 +58,7 @@ class Server {
         void handleEvent(const struct kevent& event);
         void run(void);
         void shutDown(const string& msg);
-        void parssingCommand(User* user, const struct kevent& event);
+        void __parssingCommand(User* user, const struct kevent& event);
         void checkPassword(std::vector<string> tab, User* user, const struct kevent& event);
         void sendMessage(User *user, const struct kevent& event, std::string msg, int code);
         void checkUser(std::vector<string> tab, User* user, const struct kevent& event);
@@ -64,7 +67,10 @@ class Server {
         void sendMessageWelcom(string buffer, User* user, const struct kevent& event);
         int  checkUserExist(std::vector<string> tab, User* user, const struct kevent& event);
         int	 checkNickExist(vector<string> tab, User* user, const struct kevent& event);
-
+        void handleCmd(User *user, const struct kevent& event);
+        size_t checkCmd(User *user);
+        void findCmd(string cmd);
+        vector<string> split(const string& str, const char delimeter);
 };
 
 #endif

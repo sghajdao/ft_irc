@@ -8,7 +8,7 @@ CFLAGS =
 
 INC = server.hpp User.hpp
 
-SRC = main.cpp server.cpp User.cpp
+SRC = main.cpp server.cpp User.cpp parsing.cpp
 
 OBJECTS = $(SRC:.cpp=.o)
 

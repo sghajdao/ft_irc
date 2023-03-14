@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 22:15:52 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/14 14:25:47 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,15 +106,9 @@ void Server::recvClientData(const struct kevent& event) {
 	} else {
 		buf[recvBytes] = '\0';
 		targetUser->addToCmdBuffer(buf);
-		Server::parssingCommand(targetUser, event);
+		handleCmd(targetUser, event);
 	}
 	targetUser->clearCmdBuffer();
-}
-
-std::string	stringTolower(std::string str)
-{
-	transform(str.begin(), str.end(), str.begin(), ::tolower);
-	return(str);
 }
 
 void	Server::sendMessage(User *user, const struct kevent& event, std::string msg, int code)
@@ -136,31 +130,20 @@ void	Server::sendMessage(User *user, const struct kevent& event, std::string msg
 
 void	Server::checkPassword(std::vector<string> tab, User *user, const struct kevent& event)
 {
-	if (tab.size() < 2)
+	if (tab.size() < 1)
 	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
-	else if(tab.size() > 2)
+	else if(tab.size() > 1)
 	 	sendMessage(user, event, ERROR, 404);
 	else
 	{
-		if (tab[1].compare(getpassword()) == 0)
+		if (tab[0].compare(getpassword()) == 0)
 		{
-	 		user->setPassword(tab[1]);
+	 		user->setPassword(tab[0]);
 			user->setIsPass();
 		}
 		else
 	 		sendMessage(user, event, ERR_PASSWDMISMATCH, 464);
 	}
-}
-
-int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent& event)
-{
-	map<int, User *>::iterator it = _allUser.begin();
-	for (; it != _allUser.end(); it++)
-	{
-		if (tab[1].compare(it->second->getUsername()) == 0)
-			return (1);
-	}
-	return (0);
 }
 
 int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent& event)
@@ -176,9 +159,9 @@ int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent&
 
 void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent& event)
 {
-	if (tab.size() < 5)
+	if (tab.size() < 4)
 	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
-	else if(tab.size() > 5)
+	else if(tab.size() > 4)
 	 	sendMessage(user, event, ERROR, 404);
 	else
 	{
@@ -186,10 +169,10 @@ void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent&
 			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
 		else
 		{
-	 		user->setUsername(tab[1]);
-	 		user->setHostname(tab[2]);
-	 		user->setServername(tab[3]);
-	 		user->setRealname(tab[4]);
+	 		user->setUsername(tab[0]);
+	 		user->setHostname(tab[1]);
+	 		user->setServername(tab[2]);
+	 		user->setRealname(tab[3]);
 			user->setIsUser();
 		}
 	}
@@ -197,9 +180,9 @@ void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent&
 
 void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent& event)
 {
-	if (tab.size() < 2)
+	if (tab.size() < 1)
 	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
-	else if(tab.size() > 2)
+	else if(tab.size() > 1)
 	 	sendMessage(user, event, ERROR, 404);
 	else
 	{
@@ -207,42 +190,29 @@ void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent&
 			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
 		else
 		{
-	 		user->setNickname(tab[1]);
+	 		user->setNickname(tab[0]);
 			user->setIsNick();
 		}
 	}
 }
 
-void	Server::parssingCommand(User* user, const struct kevent& event)
+void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
-	string		cmd;
-	vector<string> tab;
-	string command = user->getCmdBuffer();
-	command.erase(std::remove(command.begin(), command.end(), '\n'), command.cend());
-	if (command.empty())
-		return ;
-	char *token = strtok((char *)command.c_str(), " ");
-	while (token != NULL)
-	{
-		tab.push_back(token);
-		token = strtok(NULL, " ");
-	}
-	cmd = stringTolower(tab[0]);
 	if (!user->getRegistred())
 	{
-		if (cmd != "pass" && cmd != "user" && cmd != "nick")
+		if (_command != "pass" && _command != "user" && _command != "nick")
 			sendMessage(user, event, ERR_REGISTERED, 000);
-		else if (cmd == "pass" || cmd == "user" || cmd == "nick")
+		else if (_command == "pass" || _command == "user" || _command == "nick")
 		{
-			if (cmd.compare("pass") == 0 && !user->getIsPass())
-				Server::checkPassword(tab, user, event);
-			else if(cmd.compare("user") == 0 && !user->getIsUser())
-				Server::checkUser(tab, user, event);
-			else if(cmd.compare("nick") == 0)
-				Server::checkNick(tab, user, event);
+			if (_command.compare("pass") == 0 && !user->getIsPass())
+				Server::checkPassword(_params, user, event);
+			else if(_command.compare("user") == 0 && !user->getIsUser())
+				Server::checkUser(_params, user, event);
+			else if(_command.compare("nick") == 0)
+				Server::checkNick(_params, user, event);
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
-			Server::authentication(tab, user, event);
+			Server::authentication(_params, user, event);
 	}
 	else
 		sendMessage(user, event, "Command not found", 000);
@@ -266,19 +236,20 @@ void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& e
 
 void	Server::authentication(std::vector<string> tab, User* user, const struct kevent& event)
 {
-	string buf1;
 	time_t now = time(0);
 	char *date_time = ctime(&now);
+	char __hostname[50];
 
-	buf1 = user->getNickname() + " :Welcome to the internet relay Network, * [! * @ * ]\n";
-	sendMessageWelcom(buf1, user, event);
-	buf1.clear();
-	buf1 = user->getNickname() + " :Your host is <servername>, running version 13.37\n";
-	sendMessageWelcom(buf1, user, event);
-	buf1.clear();
-	buf1 = user->getNickname() + " :This server was created " + date_time;
-	sendMessageWelcom(buf1, user, event);
-	buf1.clear();
+	if (gethostname(__hostname, sizeof(__hostname)) == -1)
+		cout << "Error \n";
+	std::string buffer = ":" + string(__hostname) + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
+    buffer += ":" + string(__hostname) + " 002 " +  user->getNickname() + " :Your host is " + string(__hostname) + ", running version leet-irc 1.0.0\r\n";
+    buffer += ":" + string(__hostname) + " 003 " +  user->getNickname() + " :This server has been started "+ date_time + "\r\n";
+    buffer += ":" + string(__hostname) + " 004 " +  user->getNickname() + " " + string(__hostname) + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+    buffer += ":" + string(__hostname) + " 251 " + user->getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+    buffer += ":" + string(__hostname) + " 375 " + user->getNickname() + " :- " + string(__hostname) + " Message of the day -\r\n";
+    buffer += ":" + string(__hostname) + " 376 " + user->getNickname() + " :End of MOTD command\r\n";
+	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
 
