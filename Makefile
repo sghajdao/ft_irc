@@ -6,9 +6,9 @@ CC = c++
 
 CFLAGS = 
 
-INC = server.hpp User.hpp
+INC = server.hpp User.hpp Channel.hpp
 
-SRC = main.cpp server.cpp User.cpp parsing.cpp
+SRC = main.cpp server.cpp User.cpp parsing.cpp Channel.cpp
 
 OBJECTS = $(SRC:.cpp=.o)
 

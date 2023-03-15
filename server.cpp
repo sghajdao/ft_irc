@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/14 14:25:47 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/15 17:36:50 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,14 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
 
 	if (listen(_sd, 5) == -1)
         shutDown("listen() error");
+}
+
+const vector<string>& Server::getParams(void) const {
+    return _params;
+}
+
+const string& Server::getCommand(void) const {
+    return _command;
 }
 
 void Server::updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata) {
@@ -210,6 +218,8 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 				Server::checkUser(_params, user, event);
 			else if(_command.compare("nick") == 0)
 				Server::checkNick(_params, user, event);
+			else if (_command.compare("privmsg") == 0)
+				cmdPrivmsg(user, event);
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
 			Server::authentication(_params, user, event);

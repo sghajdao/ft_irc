@@ -1,6 +1,7 @@
 #include "server.hpp"
 #include "User.hpp"
 #include "messagerror.hpp"
+#include "Channel.hpp"
 
 int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent& event)
 {
@@ -50,6 +51,7 @@ void Server::handleCmd(User *user, const struct kevent& event) {
 		}
         findCmd(user->getCmdBuffer().substr(0, pos));
         __parssingCommand(user, event);
+		cout << user->getReplyBuffer() << endl;       /*******JUST FOR TESTING********/
         _command.clear();
 		_params.clear();
 	}
@@ -69,4 +71,88 @@ vector<string> Server::split(const string& str, const char delimeter) {
     }
     splited.push_back(str.substr(cursorPos));
     return splited;
+}
+
+User* Server::findClientByNickname(const string& nickname) const {
+	map<int, User*>::const_iterator it;
+	for (it = _allUser.cbegin(); it != _allUser.end(); ++it) {
+		if (it->second->getNickname() == nickname) return it->second;
+	}
+	return NULL;
+}
+
+Channel* Server::findChannelByName(const string& name) const {
+	if (name[0] != '#') return NULL;
+	
+	map<string, Channel *>::const_iterator it;
+	for (it = _allChannel.cbegin(); it != _allChannel.end(); ++it) {
+		if (it->second->getName() == name) return it->second;
+	}
+	return NULL;
+}
+
+/* IN JOIN COMMAND */
+Channel* Server::addChannel(const string& name) {
+	if (_allChannel.size() >= 30) return NULL;
+	
+	Channel *ch;
+
+	ch = new Channel(name);
+	_allChannel.insert(make_pair(name, ch));
+	cout << "channel added: " << name << '\n';
+	return ch;
+}
+
+void Server::deleteChannel(const string& name) {
+	map<string, Channel *>::iterator it = _allChannel.find(name);
+	Channel *ch = it->second;
+
+	if (it == _allChannel.end()) return ;
+	
+	cout << "Delete channel from server: " << name << '\n';
+	_allChannel.erase(name);
+	delete ch;
+}
+
+const string Server::createReplyForm(void) const {
+    string reply;
+
+    vector<string>::const_iterator it;
+    for (it = _params.begin(); it != _params.end(); ++it) {
+        reply += (*it);
+        if (*it != ":" && (it + 1) != _params.end()) reply += ' ';
+    }
+    reply += "\r\n";
+    return reply;
+}
+
+bool Server::cmdPrivmsg(User *user, const struct kevent& event) {
+    if (_params.size() < 2) {
+		sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+		return true;
+	}
+
+    const vector<string> targetList = split(getParams()[0], ',');
+    for (vector<string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
+        string targetName = *it;
+        if (targetName[0] == '#') {
+            Channel *targetChannel = this->findChannelByName(targetName);
+
+            if (targetChannel == NULL) {
+				sendMessage(user, event, ERR_NOSUCHNICK, 401);
+				continue;
+			}
+            targetChannel->broadcast(this, user->getFd());
+        } else {
+            User *targetUser;
+
+            targetUser = findClientByNickname(targetName);
+            if (targetUser == NULL) {
+				sendMessage(user, event, ERR_NOSUCHNICK, 401);
+				continue;
+			}
+            targetUser->addToReplyBuffer(user->getSource() + getCommand() + targetUser->getNickname() + ":" + getParams()[1]);
+        }
+    }
+	return true;
 }

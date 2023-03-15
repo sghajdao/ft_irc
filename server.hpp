@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/14 11:52:58 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/15 16:47:58 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 using namespace std;
 
 class User;
+class Channel;
 class Server {
     private:
         int _sd;
@@ -42,12 +43,15 @@ class Server {
         string _command;
         vector<string> _params;
         map<int, User *> _allUser;
+        map<string, Channel *> _allChannel;
         vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
 
     public:
         Server(void);
         Server(const Server& server);
+        const vector<string>& getParams(void) const;
+        const string& getCommand(void) const;
         Server& operator=(const Server& server);
         void updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
         std::string getpassword();
@@ -71,6 +75,12 @@ class Server {
         size_t checkCmd(User *user);
         void findCmd(string cmd);
         vector<string> split(const string& str, const char delimeter);
+        User* findClientByNickname(const string& nickname) const;
+        Channel* findChannelByName(const string& name) const;
+        Channel* addChannel(const string& name);
+        void deleteChannel(const string& name);
+        const string createReplyForm(void) const;
+        bool cmdPrivmsg(User *user, const struct kevent& event);
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   messagerror.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:55:19 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/13 15:21:36 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/15 15:49:23 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #define ERR_ERRONEUSNICKNAME " :Erroneus nickname"
 #define ERR_USERONCHANNEL  " :is already on channel"
 #define ERR_NICKNAMEINUSE " :Nickname is already in use"
+#define ERR_NOSUCHNICK ":No such Nickname"
 /******************************/
 /*         User Error         */
 /******************************/
