@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/17 13:15:45 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/03/17 15:53:27 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,10 +156,9 @@ void	Server::checkPassword(std::vector<string> tab, User *user, const struct kev
 
 int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent& event)
 {
-	map<int, User *>::iterator it = _allUser.begin();
-	for (; it != _allUser.end(); it++)
+	for (map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++)
 	{
-		if (tab[1].compare(it->second->getNickname()) == 0)
+		if (tab[0].compare(it->second->getNickname()) == 0)
 			return (1);
 	}
 	return (0);
@@ -208,9 +207,9 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
 	if (!user->getRegistred())
 	{
-		if (_command != "pass" && _command != "user" && _command != "nick" && _command != "privmsg")
+		if (_command != "pass" && _command != "user" && _command != "nick")
 			sendMessage(user, event, ERR_REGISTERED, 000);
-		else if (_command == "pass" || _command == "user" || _command == "nick" || _command == "privmsg")
+		else if (_command == "pass" || _command == "user" || _command == "nick")
 		{
 			if (_command.compare("pass") == 0 && !user->getIsPass())
 				Server::checkPassword(_params, user, event);
@@ -218,12 +217,12 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 				Server::checkUser(_params, user, event);
 			else if(_command.compare("nick") == 0)
 				Server::checkNick(_params, user, event);
-			else if (_command.compare("privmsg") == 0)
-				cmdPrivmsg(user, event);
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
 			Server::authentication(_params, user, event);
 	}
+	else if (_command.compare("privmsg") == 0)
+		cmdPrivmsg(user, event);
 	else
 		sendMessage(user, event, "Command not found", 000);
 	user->clearCmdBuffer();

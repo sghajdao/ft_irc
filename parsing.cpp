@@ -8,7 +8,7 @@ int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent&
 	map<int, User *>::iterator it = _allUser.begin();
 	for (; it != _allUser.end(); it++)
 	{
-		if (tab[1].compare(it->second->getUsername()) == 0)
+		if (tab[0].compare(it->second->getUsername()) == 0)
 			return (1);
 	}
 	return (0);
