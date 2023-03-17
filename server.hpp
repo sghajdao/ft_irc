@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/15 16:47:58 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/03/17 13:25:32 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ class Server {
         Channel* addChannel(const string& name);
         void deleteChannel(const string& name);
         const string createReplyForm(void) const;
-        bool cmdPrivmsg(User *user, const struct kevent& event);
+        void cmdPrivmsg(User *user, const struct kevent& event);
 };
 
 #endif

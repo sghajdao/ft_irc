@@ -51,7 +51,6 @@ void Server::handleCmd(User *user, const struct kevent& event) {
 		}
         findCmd(user->getCmdBuffer().substr(0, pos));
         __parssingCommand(user, event);
-		cout << user->getReplyBuffer() << endl;       /*******JUST FOR TESTING********/
         _command.clear();
 		_params.clear();
 	}
@@ -126,16 +125,16 @@ const string Server::createReplyForm(void) const {
     return reply;
 }
 
-bool Server::cmdPrivmsg(User *user, const struct kevent& event) {
+void Server::cmdPrivmsg(User *user, const struct kevent& event) {
     if (_params.size() < 2) {
 		sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
-		return true;
+		return;
 	}
 
     const vector<string> targetList = split(getParams()[0], ',');
     for (vector<string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
         string targetName = *it;
-        if (targetName[0] == '#') {
+        if (targetName[0] == '*') {
             Channel *targetChannel = this->findChannelByName(targetName);
 
             if (targetChannel == NULL) {
@@ -152,7 +151,7 @@ bool Server::cmdPrivmsg(User *user, const struct kevent& event) {
 				continue;
 			}
             targetUser->addToReplyBuffer(user->getSource() + getCommand() + targetUser->getNickname() + ":" + getParams()[1]);
+			// cout << user->getSource() + getCommand() + targetUser->getNickname() + ":" + getParams()[1] << endl;
         }
     }
-	return true;
 }

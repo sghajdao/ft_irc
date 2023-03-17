@@ -29,8 +29,8 @@ class Channel {
 
         void addUser(int clientFd, User *user);
         int deleteUser(int clientFd);
-        User* findUser(const int clientFd);
-        User* findUser(const string& nickname);
+        User* findUserByFd(const int clientFd);
+        User* findUserByNick(const string& nickname);
         void broadcast(Server *server, int ignoreF) const;
 };
 

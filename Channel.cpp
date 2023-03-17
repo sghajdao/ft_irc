@@ -50,7 +50,7 @@ int Channel::deleteUser(int clientFd) {
     return _userList.size();
 }
 
-User* Channel::findUser(const int clientFd) {
+User* Channel::findUserByFd(const int clientFd) {
     map<int, User *>::iterator it;
 
     it = _userList.find(clientFd);
@@ -58,7 +58,7 @@ User* Channel::findUser(const int clientFd) {
     return it->second;
 }
 
-User* Channel::findUser(const string& nickname) {
+User* Channel::findUserByNick(const string& nickname) {
     map<int, User *>::iterator it;
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {

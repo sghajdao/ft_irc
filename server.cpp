@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/15 17:36:50 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/03/17 13:15:45 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,9 +208,9 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
 	if (!user->getRegistred())
 	{
-		if (_command != "pass" && _command != "user" && _command != "nick")
+		if (_command != "pass" && _command != "user" && _command != "nick" && _command != "privmsg")
 			sendMessage(user, event, ERR_REGISTERED, 000);
-		else if (_command == "pass" || _command == "user" || _command == "nick")
+		else if (_command == "pass" || _command == "user" || _command == "nick" || _command == "privmsg")
 		{
 			if (_command.compare("pass") == 0 && !user->getIsPass())
 				Server::checkPassword(_params, user, event);
