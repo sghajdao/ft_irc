@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/22 16:39:14 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/24 22:15:39 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,6 +232,10 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0)
 		cmdPart(user, event, _params);
+	else if (_command.compare("NOTICE") == 0)
+		cmdNotice(user, event);
+	else if (_command.compare("KICK") == 0)
+		cmdKick(user, event);
 	else
 		sendMessage(user, event, "Command not found", 000);
 	user->clearCmdBuffer();
@@ -307,6 +311,8 @@ void Server::handleEvent(const struct kevent& event) {
 			createNewClientSocket();
 		else
 			recvClientData(event);}
+	else if (event.filter == EVFILT_WRITE)
+		sendDataToClient(event);
 }
 
 void Server::shutDown(const string& msg) {

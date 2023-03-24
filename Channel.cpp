@@ -45,27 +45,27 @@ void Channel::addOperators(int clientFd, User *user) {
     _operators.insert(make_pair(clientFd, user));
 }
 
-// int Channel::deleteUser(int clientFd) {
-//     map<int, User *>::iterator it;
-//     string clientSource;
-
-//     it = _userList.find(clientFd);
-//     if (it == _userList.end()) return _userList.size();
-    
-//     clientSource = it->second->getSource();
-//     _userList.erase(clientFd);
-
-//     if (_userList.empty()) return 0;
-//     return _userList.size();
-// }
-
-void Channel::deleteUser(int clientFd) {
+int Channel::deleteUser(int clientFd) {
     map<int, User *>::iterator it;
+    // string clientSource;
 
     it = _userList.find(clientFd);
-    if (it != _userList.end())
-        _userList.erase(clientFd);
+    if (it == _userList.end()) return _userList.size();
+    
+    // clientSource = it->second->getSource();
+    _userList.erase(clientFd);
+
+    if (_userList.empty()) return 0;
+    return _userList.size();
 }
+
+// void Channel::deleteUser(int clientFd) {
+//     map<int, User *>::iterator it;
+
+//     it = _userList.find(clientFd);
+//     if (it != _userList.end())
+//         _userList.erase(clientFd);
+// }
 
 void Channel::deleteOperator(int clientFd) {
     map<int, User *>::iterator it;

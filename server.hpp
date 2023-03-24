@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/22 16:09:46 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/24 22:15:28 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,8 @@ class Server {
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
-    
+        void cmdNotice(User *user, const struct kevent& event);
+        void cmdKick(User *user, const struct kevent& event);
 };
 
 #endif

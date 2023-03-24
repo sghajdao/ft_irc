@@ -42,7 +42,6 @@ class User {
 		const string& getHostname(void) const;
 		const string& getServername(void) const;
 		const string& getRealname(void) const;
-		bool getAuth(void) const;
 		const string& getCmdBuffer(void) const;
 		const string& getReplyBuffer(void) const;
 		bool getIsQuiting(void) const;
@@ -57,7 +56,6 @@ class User {
 		void setHostname(const string& hostname);
 		void setServername(const string& servername);
 		void setRealname(const string& realname);
-		void setAuth(void);
 		void setIsQuiting(void);
 		void setIsUser(void);
 		void setIsPass(void);
