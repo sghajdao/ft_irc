@@ -15,7 +15,7 @@ const string& User::getHost(void) const {
     return _host;
 }
 
-const string& User::getPassword(void) const {
+string User::getPassword(void) {
     return _password;
 }
 
@@ -145,4 +145,30 @@ int  User::getRegistred(void) const
 void User::setRegistred(void)
 {
     registred = true;
+}
+
+User& User::operator=(const User& user)
+{
+	this->_nickname = user._nickname;
+	return(*this);
+}
+
+User::User(const User& user)
+{
+    *this = user;
+}
+
+void User::addChannel(string channel){
+	_channelOfuser.push_back(channel);
+}
+
+void User::deleteChannel(string channel){
+    vector<string>::iterator it;
+
+    it = _channelOfuser.begin();
+    for (int i = 0; i < _channelOfuser.size(); i++)
+    {
+        if (it != _channelOfuser.end())
+    	    _channelOfuser.erase(it);
+    }
 }

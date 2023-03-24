@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/17 13:25:32 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/03/22 16:09:46 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include <string>
+# include <cstring>
 # include <ctime>
 # include <map>
 # include <exception>
@@ -44,7 +44,7 @@ class Server {
         vector<string> _params;
         map<int, User *> _allUser;
         map<string, Channel *> _allChannel;
-        vector<struct kevent> eventList;
+        vector<struct kevent> eventList; // kernel event notification mechanism
         struct kevent _waitingEvents[8];
 
     public:
@@ -81,6 +81,9 @@ class Server {
         void deleteChannel(const string& name);
         const string createReplyForm(void) const;
         void cmdPrivmsg(User *user, const struct kevent& event);
+        void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
+        void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
+    
 };
 
 #endif

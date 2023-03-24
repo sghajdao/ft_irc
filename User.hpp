@@ -7,7 +7,7 @@
 using namespace std;
 
 class User {
-	private:
+	public:
 		int _sd;
 		bool _pass;
 		bool _user;
@@ -23,18 +23,19 @@ class User {
 		string _cmdBuffer;
 		string _replyBuffer;
 		bool _isQuiting;
+		vector<string> _channelOfuser;
 
 	public:
 		User(void);
 		User(const User& user);
 		User& operator=(const User& user);
-
         User(int fd, const string& host);
 		~User();
-		
+		void addChannel(string channel);
+		void deleteChannel(string channel);
 		int getFd(void) const;
 		const string& getHost(void) const;
-		const string& getPassword(void) const;
+		string getPassword(void);
 		const string getNickname(void) const;
 		const string getSource(void) const;
 		const string& getUsername(void) const;

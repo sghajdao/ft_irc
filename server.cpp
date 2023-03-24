@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/17 15:53:27 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/03/22 16:39:14 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,11 @@ void Server::createNewClientSocket(void) {
 
 	user = new User(clientSocket, hostStr);
 	_allUser.insert(make_pair(clientSocket, user));
+	// map<int, User *>::iterator it;
+	// it = _allUser.begin();
+	// cout << it->second->getFd() << endl;
+	// it++;
+	// cout << it->second->getFd() << endl;
 }
 
 void Server::run() {
@@ -207,22 +212,26 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
 	if (!user->getRegistred())
 	{
-		if (_command != "pass" && _command != "user" && _command != "nick")
+		if (_command != "PASS" && _command != "USER" && _command != "NICK")
 			sendMessage(user, event, ERR_REGISTERED, 000);
-		else if (_command == "pass" || _command == "user" || _command == "nick")
+		else if (_command == "PASS" || _command == "USER" || _command == "NICK")
 		{
-			if (_command.compare("pass") == 0 && !user->getIsPass())
+			if (_command.compare("PASS") == 0 && !user->getIsPass())
 				Server::checkPassword(_params, user, event);
-			else if(_command.compare("user") == 0 && !user->getIsUser())
+			else if(_command.compare("USER") == 0 && !user->getIsUser())
 				Server::checkUser(_params, user, event);
-			else if(_command.compare("nick") == 0)
+			else if(_command.compare("NICK") == 0)
 				Server::checkNick(_params, user, event);
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
 			Server::authentication(_params, user, event);
 	}
-	else if (_command.compare("privmsg") == 0)
+	else if (_command.compare("PRIVMSG") == 0)
 		cmdPrivmsg(user, event);
+	else if (_command.compare("JOIN") == 0)
+		cmdJoin(user, event, _params);
+	else if (_command.compare("PART") == 0)
+		cmdPart(user, event, _params);
 	else
 		sendMessage(user, event, "Command not found", 000);
 	user->clearCmdBuffer();
@@ -311,6 +320,7 @@ void Server::shutDown(const string& msg) {
 	cerr << msg << endl;
 	exit(EXIT_FAILURE);
 }
+
 
 std::string Server::getpassword()
 {
