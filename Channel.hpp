@@ -17,6 +17,7 @@ class Channel {
     string _password;
     bool _findPass;
 		map<int, User *> _userList;
+    map<int, User *> members;
 		map<int, User *> _operators;
 		// map<int, User *> bans;
 

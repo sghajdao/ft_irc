@@ -189,12 +189,18 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 		map<string, Channel *>::iterator it;
 		it = _allChannel.find(name_channel[i]);
 		if ((name_channel[i][0] != '#' && name_channel[i][0] != '&') || (name_channel[i].size() == 1 && (name_channel[i][0] == '#' || name_channel[i][0] == '&')))
+		{
 			sendMessage(user, event, " :Bad Channel Mask", 461);
-		else if (it != _allChannel.end())
+			return ;
+		}
+		if (it != _allChannel.end())
 		{
 			if (it->second->findUserIfExist(user->getFd()))
+			{
 				sendMessage(user, event, " deja exist ", 475);
-			else if (it->second->getFindPass() == 1)
+				return ;
+			}
+			if (it->second->getFindPass() == 1)
 			{
 				if (x != 0)
 				{
@@ -202,6 +208,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 					{
 						it->second->addUser(event.ident, user);
 						user->addChannel(name_channel[i]);
+						sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
 					}
 					else
 					sendMessage(user, event, ERR_BADCHANNELKEY, 475);
@@ -213,6 +220,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 			{
 				it->second->addUser(event.ident, user);
 				user->addChannel(name_channel[i]);
+				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
 			}
 		}
 		else
@@ -248,16 +256,16 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 			}
 		}
 	}
-	// cout << "--------begin--------\n";
-	// map<string, Channel *>::iterator it;
-	// it = _allChannel.begin();
-	// for (; it != _allChannel.end(); it++)
-	// {
-	// 	cout << "channel: " << it->first << "pass is :" << it->second->getFindPass() << endl;
-	// 	it->second->getAllUser();
-	// 	it->second->getOperator();
-	// }
-	// cout << "--------end----------\n";
+	cout << "--------begin--------\n";
+	map<string, Channel *>::iterator it;
+	it = _allChannel.begin();
+	for (; it != _allChannel.end(); it++)
+	{
+		cout << "channel: " << it->first << " pass is :" << it->second->getFindPass() << endl;
+		it->second->getAllUser();
+		it->second->getOperator();
+	}
+	cout << "--------end----------\n";
 }
 void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 {
@@ -305,4 +313,46 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 			sendMessage(user, event, " :No such channel", 403);
 		
 	}
+}
+
+/*
+	LOOP:
+	step 1: ghada t9albi 3la user libghti t invitie l chennel wax kain f map dyal users ila makanx return => error
+	step 2: ghada tchofi dak l user li ghadi invite wax howa operator olala (wax 3ando l7a9 invite)
+	LOOP:
+	step 3: ghadit tchofi channel wax kaina ola la ila kanet ghadi t invite dak user l channel makantch a return => error
+	(aytzad f map dyal _userList)
+
+*/
+
+int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
+{
+	if (invite.empty())
+		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
+	string nickname = invite[0];
+	string channel = invite[1];
+	std::map<string, Channel *>::iterator it;
+	char *n, *ch;
+	bool ft = false;
+	cout << _allUser.size() << endl;
+	size_t i = 0;
+	for(; i < _params.size(); i++)
+	{
+		if (this->_params[i] == nickname)
+		{
+			ft = true;
+			break ;
+		}
+	}
+	if (ft == false)
+		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHNICK, 401), 0);
+	it = _allChannel.find(channel);
+	if (it == this->_allChannel.end())
+		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
+	if (it->second->_operators.find(user->_nick) == it->second->_operators.end())
+		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
+	if (it->second->_userList.find(user->_nick) != it->second->_userList.end())
+		sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 4000);
+	sendMessage_INVITE(nickname + " ", event, channel, 341);
+	return (0);
 }

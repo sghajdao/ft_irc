@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/22 16:39:14 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/25 01:46:52 by mlalouli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,9 +232,28 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0)
 		cmdPart(user, event, _params);
+	else if (_command.compare("INVITE") == 0)
+		INVITE(user, event, _params);
 	else
 		sendMessage(user, event, "Command not found", 000);
 	user->clearCmdBuffer();
+}
+
+void	Server::sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code)
+{
+	int sendBytes;
+	std::string name = nickname;
+	name = to_string(code) + " * " + name + msg + "\n";
+	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
+	if (sendBytes <= 0) {
+		if (sendBytes == -1 && errno == EAGAIN) {
+			errno = 0;
+			return;
+		}
+		cerr << "client send error!" << endl;
+		_allUser.erase(event.ident);
+		cout << "client disconnected: " << event.ident << '\n';
+	}
 }
 
 void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& event)
