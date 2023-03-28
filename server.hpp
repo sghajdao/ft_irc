@@ -6,10 +6,9 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/22 16:09:46 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/28 22:51:05 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
@@ -83,7 +82,9 @@ class Server {
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
-    
+        void cmdMode(User *user, const struct kevent& event, vector<string> tab);
+        void cmdKick(User *user, const struct kevent& event, vector<string> tab);
+        void creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel);
 };
 
 #endif

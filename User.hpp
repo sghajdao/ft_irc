@@ -23,7 +23,8 @@ class User {
 		string _cmdBuffer;
 		string _replyBuffer;
 		bool _isQuiting;
-		vector<string> _channelOfuser;
+		vector<string> _channelOfUser;
+		vector<string> _channelOfOperatore;
 
 	public:
 		User(void);
@@ -31,8 +32,12 @@ class User {
 		User& operator=(const User& user);
         User(int fd, const string& host);
 		~User();
-		void addChannel(string channel);
-		void deleteChannel(string channel);
+		void addChannelUser(string channel);
+		void addChannelOperator(string channel);
+		void deleteChannelUser(string channel);
+		void deleteChannelOperator(string channel);
+		bool SearchChannelOperator(string channel);
+		bool SearchChannelUser(string channel);
 		int getFd(void) const;
 		const string& getHost(void) const;
 		string getPassword(void);
