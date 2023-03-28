@@ -40,7 +40,7 @@ class Channel {
         string getPassword() const;
         void addUser(int clientFd, User *user);
         void addOperators(int clientFd, User *user);
-        void deleteUser(int clientFd);
+        int deleteUser(int clientFd);
         void deleteOperator(int clientFd);
         User* findUserByFd(const int clientFd);
         bool findUserIfExist(const int clientFd);

@@ -3,10 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+<<<<<<< HEAD
 /*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
 /*   Updated: 2023/03/25 01:40:42 by mlalouli         ###   ########.fr       */
+=======
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
+/*   Updated: 2023/03/24 22:15:28 by sghajdao         ###   ########.fr       */
+>>>>>>> 81e572c5516286811c31449ece5b40e7c583caed
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +92,8 @@ class Server {
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
-    
+        void cmdNotice(User *user, const struct kevent& event);
+        void cmdKick(User *user, const struct kevent& event);
 };
 
 #endif

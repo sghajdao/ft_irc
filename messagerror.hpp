@@ -3,10 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   messagerror.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+<<<<<<< HEAD
 /*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:55:19 by ibenmain          #+#    #+#             */
 /*   Updated: 2023/03/26 17:33:17 by mlalouli         ###   ########.fr       */
+=======
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/12 16:55:19 by ibenmain          #+#    #+#             */
+/*   Updated: 2023/03/24 22:08:16 by sghajdao         ###   ########.fr       */
+>>>>>>> 81e572c5516286811c31449ece5b40e7c583caed
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,5 +50,8 @@
 /******************************/
 #define ERR_USERONCHANNEL " :is already on channel"
 
+#define ERR_NOSUCHCHNL " :No such channel"
+#define ERR_NOTINCHNL ":You're not on that channel"
+#define ERR_USERNOTINCHNL ":They aren't on that channel"
 
 #endif
