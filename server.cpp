@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/28 22:50:29 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/29 01:43:30 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,11 +234,34 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdPart(user, event, _params);
 	else if (_command.compare("MODE") == 0)
 		cmdMode(user, event, _params);
+	// else if (_command.compare("INVITE") == 0)
+	// 	INVITE(user, event, _params);
+	else if (_command.compare("NOTICE") == 0)
+		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0)
-		cmdKick(user, event, _params);
+		cmdKick(user, event);
+	else if (_command.compare("TOPIC") == 0)
+		cmdTopic(user, event, _params);
 	else
 		sendMessage(user, event, " Command not found", 000);
 	user->clearCmdBuffer();
+}
+
+void	Server::sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code)
+{
+	int sendBytes;
+	std::string name = nickname;
+	name = to_string(code) + " * " + name + msg + "\n";
+	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
+	if (sendBytes <= 0) {
+		if (sendBytes == -1 && errno == EAGAIN) {
+			errno = 0;
+			return;
+		}
+		cerr << "client send error!" << endl;
+		_allUser.erase(event.ident);
+		cout << "client disconnected: " << event.ident << '\n';
+	}
 }
 
 void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& event)
@@ -307,6 +330,8 @@ void Server::handleEvent(const struct kevent& event) {
 			createNewClientSocket();
 		else
 			recvClientData(event);}
+	else if (event.filter == EVFILT_WRITE)
+		sendDataToClient(event);
 }
 
 void Server::shutDown(const string& msg) {

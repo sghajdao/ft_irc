@@ -136,15 +136,6 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
     const vector<string> targetList = split(getParams()[0], ',');
     for (vector<string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
         string targetName = *it;
-        if (targetName[0] == '*') {
-            Channel *targetChannel = this->findChannelByName(targetName);
-
-            if (targetChannel == NULL) {
-				sendMessage(user, event, ERR_NOSUCHNICK, 401);
-				continue;
-			}
-            targetChannel->broadcast(this, user->getFd());
-        } else {
             User *targetUser;
 
             targetUser = findClientByNickname(targetName);
@@ -153,8 +144,6 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 				continue;
 			}
             targetUser->addToReplyBuffer(user->getSource() + getCommand() + targetUser->getNickname() + ":" + getParams()[1]);
-			// cout << user->getSource() + getCommand() + targetUser->getNickname() + ":" + getParams()[1] << endl;
-        }
     }
 }
 
@@ -261,6 +250,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				tmp = new User(*user);
 				tmp->setNickname("@" + tmp->getNickname());
 				channel->addOperators(event.ident, tmp);
+				channel->setTopic(false);
 				_allChannel.insert(make_pair(name_channel[i], channel));
 				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
 			}
@@ -276,6 +266,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				tmp = new User(*user);
 				tmp->setNickname("@" + tmp->getNickname());
 				channel->addOperators(event.ident, tmp);
+				channel->setTopic(false);
 				channel->setFindPass(true);
 				_allChannel.insert(make_pair(name_channel[i], channel));
 				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
@@ -448,4 +439,83 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		it1->second->getOperator();
 	}
 	cout << "--------end----------\n";
+}
+
+/*
+	LOOP:
+	step 1: ghada t9albi 3la user libghti t invitie l chennel wax kain f map dyal users ila makanx return => error
+	step 2: ghada tchofi dak l user li ghadi invite wax howa operator olala (wax 3ando l7a9 invite)
+	LOOP:
+	step 3: ghadit tchofi channel wax kaina ola la ila kanet ghadi t invite dak user l channel makantch a return => error
+	(aytzad f map dyal _userList)
+
+*/
+
+// int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
+// {
+// 	if (invite.empty())
+// 		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
+// 	string nickname = invite[0];
+// 	string channel = invite[1];
+// 	std::map<string, Channel *>::iterator it;
+// 	char *n, *ch;
+// 	bool ft = false;
+// 	cout << _allUser.size() << endl;
+// 	size_t i = 0;
+// 	for(; i < _params.size(); i++)
+// 	{
+// 		if (this->[i] == nickname)
+// 		{
+// 			ft = true;
+// 			break ;
+// 		}
+// 	}
+// 	if (ft == false)
+// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHNICK, 401), 0);
+// 	it = _allChannel.find(channel);
+// 	if (it == this->_allChannel.end())
+// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
+// 	if (it->second->_operators.find(user->_nick) == it->second->_operators.end())
+// 		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
+// 		/*start*/
+// 	if (it->second->_userList.find(user->_nick) != it->second->_userList.end())
+// 		sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 4000);
+// 	sendMessage_INVITE(nickname + " ", event, channel, 341);
+// 	return (0);
+// }
+
+void Server::cmdTopic(User *user, const struct kevent& event, vector<string> tab)
+{
+	map<string, Channel *>::iterator it;
+	if (tab.empty())
+		return (sendMessage(user, event, " empty", 461));
+	if (tab.size() != 1 && tab.size() != 2)
+		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461));
+	it = _allChannel.find(tab[0]);
+	if (it != _allChannel.end())
+	{
+		if (it->second->findOperatorIfExistByNick("@" + user->getNickname()) && it->second->getTopic() == 1)
+		{
+			if (tab[1].empty() && it->second->getTopic())
+				cout << "no topic\n";
+			else if(!tab[1].empty())
+				it->second->setNametopic(tab[1]);
+			else
+				cout << it->second->getNametopic() << endl;
+
+		}
+		else if (it->second->findUserIfExistByNick(user->getNickname()) && it->second->getTopic() == 0)
+		{
+			if (tab[1].empty() && it->second->getTopic())
+				cout << "no topic\n";
+			else if(!tab[1].empty())
+				it->second->setNametopic(tab[1]);
+			else
+				cout << it->second->getNametopic() << endl;
+		}
+		else
+			return (sendMessage(user, event, "not mumber in this channel", 461));
+	}
+	else
+		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461));
 }

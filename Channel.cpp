@@ -5,6 +5,7 @@
 Channel::Channel(const string& name){
     _name = name;
     _password = "";
+    _nametopic = "";
     _findPass = 0;
     _topic = 0;
     _invit = 0;
@@ -13,6 +14,7 @@ Channel::Channel(const string& name){
 Channel::Channel(string name, string password){
     _name = name;
     _password = password;
+    _nametopic = "";
     _findPass = 0;
     _topic = 0;
     _invit = 0;
@@ -69,24 +71,27 @@ void Channel::addOperators(int clientFd, User *user) {
 // int Channel::deleteUser(int clientFd) {
 //     map<int, User *>::iterator it;
 //     string clientSource;
-
-//     it = _userList.find(clientFd);
-//     if (it == _userList.end()) return _userList.size();
-    
-//     clientSource = it->second->getSource();
-//     _userList.erase(clientFd);
-
-//     if (_userList.empty()) return 0;
-//     return _userList.size();
-// }
-
-void Channel::deleteUser(int clientFd) {
+int Channel::deleteUser(int clientFd) {
     map<int, User *>::iterator it;
+    // string clientSource;
 
     it = _userList.find(clientFd);
-    if (it != _userList.end())
-        _userList.erase(clientFd);
+    if (it == _userList.end()) return _userList.size();
+    
+    // clientSource = it->second->getSource();
+    _userList.erase(clientFd);
+
+    if (_userList.empty()) return 0;
+    return _userList.size();
 }
+
+// void Channel::deleteUser(int clientFd) {
+//     map<int, User *>::iterator it;
+
+//     it = _userList.find(clientFd);
+//     if (it != _userList.end())
+//         _userList.erase(clientFd);
+// }
 
 void Channel::deleteOperator(int clientFd) {
     map<int, User *>::iterator it;
@@ -237,6 +242,26 @@ bool Channel::getTopic() const
 void Channel::setTopic(bool topic)
 {
     _topic = topic;
+}
+
+bool Channel::getFoundtopic() const
+{
+    return (_foundtopic);
+}
+
+void Channel::setFoundtopic(bool foundtopic)
+{
+    _foundtopic = foundtopic;
+}
+
+string Channel::getNametopic()
+{
+    return (_nametopic);
+}
+
+void Channel::setNametopic(string nametopic)
+{
+    _nametopic = nametopic;
 }
 
 bool Channel::getInvit() const

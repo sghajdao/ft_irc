@@ -14,11 +14,14 @@ class User;
 class Channel {
     public:
 		string _name;
+		string _nametopic;
     string _password;
     bool _findPass;
     bool _topic;
+    bool _foundtopic;
     bool _invit;
 		map<int, User *> _userList;
+    map<int, User *> members;
 		map<int, User *> _operators;
 		// map<int, User *> bans;
 
@@ -33,7 +36,11 @@ class Channel {
         bool getFindPass() const;
         void setFindPass(bool pass);
         bool getTopic() const;
-        void setTopic(bool pass);
+        void setTopic(bool topic);
+        bool getFoundtopic() const;
+        void setNametopic(string nametopic);
+        string getNametopic();
+        void setFoundtopic(bool foundtopic);
         bool getInvit() const;
         void setInvit(bool pass);
         void deletePassword();
@@ -50,7 +57,7 @@ class Channel {
         string getPassword() const;
         void addUser(int clientFd, User *user);
         void addOperators(int clientFd, User *user);
-        void deleteUser(int clientFd);
+        int deleteUser(int clientFd);
         void deleteOperator(int clientFd);
         User* findUserByFd(const int clientFd);
         bool findUserIfExistByFd(const int clientFd);

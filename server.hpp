@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/28 22:51:05 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/03/29 01:43:23 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,13 +78,17 @@ class Server {
         Channel* findChannelByName(const string& name) const;
         Channel* addChannel(const string& name);
         void deleteChannel(const string& name);
+        // int INVITE(User *user, const struct kevent event, vector<string> &invite);
+        void sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code);
         const string createReplyForm(void) const;
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
         void cmdMode(User *user, const struct kevent& event, vector<string> tab);
         void cmdKick(User *user, const struct kevent& event, vector<string> tab);
-        void creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel);
+        void cmdTopic(User *user, const struct kevent& event, vector<string> tab);
+        void cmdNotice(User *user, const struct kevent& event);
+        void creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel);void cmdKick(User *user, const struct kevent& event);
 };
 
 #endif
