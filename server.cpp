@@ -3,19 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-<<<<<<< HEAD
 /*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/25 01:46:52 by mlalouli         ###   ########.fr       */
-=======
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/24 22:15:39 by sghajdao         ###   ########.fr       */
->>>>>>> 81e572c5516286811c31449ece5b40e7c583caed
+/*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
+/*   Updated: 2023/03/28 05:47:47 by mlalouli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #include "messagerror.hpp"
 #include "server.hpp"
@@ -239,15 +234,13 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0)
 		cmdPart(user, event, _params);
-<<<<<<< HEAD
+
 	else if (_command.compare("INVITE") == 0)
 		INVITE(user, event, _params);
-=======
 	else if (_command.compare("NOTICE") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0)
 		cmdKick(user, event);
->>>>>>> 81e572c5516286811c31449ece5b40e7c583caed
 	else
 		sendMessage(user, event, "Command not found", 000);
 	user->clearCmdBuffer();

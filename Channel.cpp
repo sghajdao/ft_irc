@@ -10,6 +10,17 @@ const string& Channel::getName(void) const {
     return _name;
 }
 
+bool Channel::findOperatorIfExistByNick(string nick) {
+    map<int, User *>::iterator it;
+    it = _operators.begin();
+    for (; it != _operators.end(); it++)
+    {
+        if (it->second->getNickname() == "@" + nick)
+            return (true);
+    }
+    return (false);
+}
+
 void Channel::broadcast(Server *server, int ignoreFd) const {
     map<int, User *>::const_iterator it;
     const string msg = server->createReplyForm();

@@ -196,14 +196,39 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 			}
 		}
 	}
-	// cout << "--------begin--------\n";
-	// map<string, Channel *>::iterator it;
-	// it = _allChannel.begin();
-	// for (; it != _allChannel.end(); it++)
-	// {
-	// 	cout << "channel: " << it->first << "pass is :" << it->second->getFindPass() << endl;
-	// 	it->second->getAllUser();
-	// 	it->second->getOperator();
-	// }
-	// cout << "--------end----------\n";
+	cout << "--------begin--------\n";
+	map<string, Channel *>::iterator it;
+	it = _allChannel.begin();
+	for (; it != _allChannel.end(); it++)
+	{
+		cout << "channel: " << it->first << "pass is :" << it->second->getFindPass() << endl;
+		it->second->getAllUser();
+		it->second->getOperator();
+	}
+	cout << "--------end----------\n";
+}
+
+
+int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
+{
+	if (invite.empty())
+		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
+	string nickname = invite[0];
+	string channel = invite[1];
+	std::map<string, User *>::iterator it;
+	
+	Channel *t = findChannelByName(channel);
+	if (t == NULL)
+		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
+	User *t0 = t->findUserByNick(nickname);
+	if (t0 == NULL)
+		return (sendMessage_INVITE(channel, event, ERR_NOSUCHNICK, 401), 0);
+	bool l = t->findOperatorIfExist(user->getFd());
+	if (l == false)
+		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
+	if (t0 != NULL)
+			return (sendMessage_INVITE(channel, event, ERR_USERONCHANNEL, 443), 0);
+	
+	sendMessage_INVITE(nickname + " ", event, channel, 341);
+	return (0);
 }

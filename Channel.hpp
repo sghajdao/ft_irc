@@ -45,6 +45,7 @@ class Channel {
         User* findUserByFd(const int clientFd);
         bool findUserIfExist(const int clientFd);
         bool findOperatorIfExist(const int clientFd);
+        bool findOperatorIfExistByNick(string nick);
         User* findUserByNick(const string& nickname);
         void broadcast(Server *server, int ignoreF) const;
 };
