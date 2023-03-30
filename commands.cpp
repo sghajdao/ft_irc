@@ -3,20 +3,6 @@
 #include "messagerror.hpp"
 #include "Channel.hpp"
 
-vector<string>	ft_split_line(string str)
-{
-	vector<string> key;
-	if (str.empty())
-		return key;
-	char *tmp = strtok(const_cast<char *>(str.c_str()), ",");
-	while (tmp != NULL)
-	{
-		key.push_back(tmp);
-		tmp = strtok(NULL, ",");
-	}
-	return(key);
-}
-
 void Server::cmdNotice(User *user, const struct kevent& event) {
     if (_params.size() < 2) {
 		sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
@@ -70,6 +56,7 @@ void Server::cmdKick(User *user, const struct kevent& event){
 		}
 	}
 }
+<<<<<<< HEAD
 
 void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 {
@@ -232,3 +219,5 @@ int Server::INVITE(User *user, const struct kevent event, vector<string> &invite
 	sendMessage_INVITE(nickname + " ", event, channel, 341);
 	return (0);
 }
+=======
+>>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1

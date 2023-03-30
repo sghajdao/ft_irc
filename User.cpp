@@ -21,7 +21,7 @@ string User::getPassword(void) {
 
 const string User::getNickname(void) const {
     if (_nickname.empty()) return "*";
-    
+
     return _nickname;
 }
 
@@ -158,17 +158,52 @@ User::User(const User& user)
     *this = user;
 }
 
-void User::addChannel(string channel){
-	_channelOfuser.push_back(channel);
+void User::addChannelUser(string channel){
+	_channelOfUser.push_back(channel);
 }
 
-void User::deleteChannel(string channel){
+void User::deleteChannelUser(string channel){
     vector<string>::iterator it;
 
-    it = _channelOfuser.begin();
-    for (int i = 0; i < _channelOfuser.size(); i++)
+    it = _channelOfUser.begin();
+    for (int i = 0; i < _channelOfUser.size(); i++)
     {
-        if (it != _channelOfuser.end())
-    	    _channelOfuser.erase(it);
+        if (it != _channelOfUser.end())
+    	    _channelOfUser.erase(it);
     }
+}
+
+void User::addChannelOperator(string channel){
+	_channelOfOperatore.push_back(channel);
+}
+
+void User::deleteChannelOperator(string channel){
+    vector<string>::iterator it;
+
+    it = _channelOfOperatore.begin();
+    for (int i = 0; i < _channelOfOperatore.size(); i++)
+    {
+        if (it != _channelOfOperatore.end())
+    	    _channelOfOperatore.erase(it);
+    }
+}
+
+bool User::SearchChannelOperator(string channel){
+
+    for (int i = 0; i < _channelOfOperatore.size(); i++)
+    {
+        if (_channelOfOperatore[i] == channel)
+            return (true);
+    }
+    return (false);
+}
+
+bool User::SearchChannelUser(string channel){
+
+    for (int i = 0; i < _channelOfUser.size(); i++)
+    {
+        if (_channelOfUser[i] == channel)
+            return (true);
+    }
+    return (false);
 }

@@ -3,10 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+<<<<<<< HEAD
 /*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
 /*   Updated: 2023/03/28 05:47:47 by mlalouli         ###   ########.fr       */
+=======
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
+/*   Updated: 2023/03/29 01:43:30 by ibenmain         ###   ########.fr       */
+>>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,15 +241,27 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0)
 		cmdPart(user, event, _params);
+<<<<<<< HEAD
 
 	else if (_command.compare("INVITE") == 0)
 		INVITE(user, event, _params);
+=======
+	else if (_command.compare("MODE") == 0)
+		cmdMode(user, event, _params);
+	// else if (_command.compare("INVITE") == 0)
+	// 	INVITE(user, event, _params);
+>>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
 	else if (_command.compare("NOTICE") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0)
 		cmdKick(user, event);
+<<<<<<< HEAD
+=======
+	else if (_command.compare("TOPIC") == 0)
+		cmdTopic(user, event, _params);
+>>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
 	else
-		sendMessage(user, event, "Command not found", 000);
+		sendMessage(user, event, " Command not found", 000);
 	user->clearCmdBuffer();
 }
 
@@ -288,11 +307,7 @@ void	Server::authentication(std::vector<string> tab, User* user, const struct ke
 		cout << "Error \n";
 	std::string buffer = ":" + string(__hostname) + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
     buffer += ":" + string(__hostname) + " 002 " +  user->getNickname() + " :Your host is " + string(__hostname) + ", running version leet-irc 1.0.0\r\n";
-    buffer += ":" + string(__hostname) + " 003 " +  user->getNickname() + " :This server has been started "+ date_time + "\r\n";
-    buffer += ":" + string(__hostname) + " 004 " +  user->getNickname() + " " + string(__hostname) + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-    buffer += ":" + string(__hostname) + " 251 " + user->getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-    buffer += ":" + string(__hostname) + " 375 " + user->getNickname() + " :- " + string(__hostname) + " Message of the day -\r\n";
-    buffer += ":" + string(__hostname) + " 376 " + user->getNickname() + " :End of MOTD command\r\n";
+    buffer += ":" + string(__hostname) + " 003 " +  user->getNickname() + " :This server has been started " + date_time + "\r\n";
 	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
@@ -348,7 +363,6 @@ void Server::shutDown(const string& msg) {
 	cerr << msg << endl;
 	exit(EXIT_FAILURE);
 }
-
 
 std::string Server::getpassword()
 {
