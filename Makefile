@@ -8,7 +8,7 @@ CFLAGS =
 
 INC = server.hpp User.hpp Channel.hpp messagerror.hpp
 
-SRC = main.cpp server.cpp User.cpp parsing.cpp Channel.cpp commands.cpp
+SRC = main.cpp server.cpp User.cpp parsing.cpp Channel.cpp commands.cpp bot.cpp
 
 OBJECTS = $(SRC:.cpp=.o)
 

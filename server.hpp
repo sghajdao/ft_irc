@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:00 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/29 01:43:23 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/03 17:53:30 by mlalouli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Server {
         string _command;
         vector<string> _params;
         map<int, User *> _allUser;
+        map<string, User *> _allUser1;
         map<string, Channel *> _allChannel;
         vector<struct kevent> eventList; // kernel event notification mechanism
         struct kevent _waitingEvents[8];
@@ -60,6 +61,7 @@ class Server {
         void sendDataToClient(const struct kevent& event);
         void handleEvent(const struct kevent& event);
         void run(void);
+        void bot(const struct kevent& event);
         void shutDown(const string& msg);
         void __parssingCommand(User* user, const struct kevent& event);
         void checkPassword(std::vector<string> tab, User* user, const struct kevent& event);
@@ -78,7 +80,8 @@ class Server {
         Channel* findChannelByName(const string& name) const;
         Channel* addChannel(const string& name);
         void deleteChannel(const string& name);
-        // int INVITE(User *user, const struct kevent event, vector<string> &invite);
+        int INVITE(User *user, const struct kevent event, vector<string> &invite);
+        void    sendMessage_bot(string nickname, const struct kevent& event);
         void sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code);
         const string createReplyForm(void) const;
         void cmdPrivmsg(User *user, const struct kevent& event);

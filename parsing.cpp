@@ -451,38 +451,29 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 
 */
 
-// int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
-// {
-// 	if (invite.empty())
-// 		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
-// 	string nickname = invite[0];
-// 	string channel = invite[1];
-// 	std::map<string, Channel *>::iterator it;
-// 	char *n, *ch;
-// 	bool ft = false;
-// 	cout << _allUser.size() << endl;
-// 	size_t i = 0;
-// 	for(; i < _params.size(); i++)
-// 	{
-// 		if (this->[i] == nickname)
-// 		{
-// 			ft = true;
-// 			break ;
-// 		}
-// 	}
-// 	if (ft == false)
-// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHNICK, 401), 0);
-// 	it = _allChannel.find(channel);
-// 	if (it == this->_allChannel.end())
-// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
-// 	if (it->second->_operators.find(user->_nick) == it->second->_operators.end())
-// 		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
-// 		/*start*/
-// 	if (it->second->_userList.find(user->_nick) != it->second->_userList.end())
-// 		sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 4000);
-// 	sendMessage_INVITE(nickname + " ", event, channel, 341);
-// 	return (0);
-// }
+int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
+{
+	if (invite.empty())
+		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
+	string nickname = invite[0];
+	string channel = invite[1];
+	std::map<string, User *>::iterator it;
+	
+	Channel *t = findChannelByName(channel);
+	if (t == NULL)
+		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
+	User *t0 = t->findUserByNick(nickname);
+	if (t0 == NULL)
+		return (sendMessage_INVITE(channel, event, ERR_NOSUCHNICK, 401), 0);
+	bool l = t->findOperatorIfExist(user->getFd());
+	if (l == false)
+		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
+	if (t0 != NULL)
+			return (sendMessage_INVITE(channel, event, ERR_USERONCHANNEL, 443), 0);
+	
+	sendMessage_INVITE(nickname + " ", event, channel, 341);
+	return (0);
+}
 
 void Server::cmdTopic(User *user, const struct kevent& event, vector<string> tab)
 {

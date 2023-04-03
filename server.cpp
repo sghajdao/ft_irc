@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/29 01:43:30 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/03 17:45:43 by mlalouli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,14 +234,16 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdPart(user, event, _params);
 	else if (_command.compare("MODE") == 0)
 		cmdMode(user, event, _params);
-	// else if (_command.compare("INVITE") == 0)
-	// 	INVITE(user, event, _params);
+	else if (_command.compare("INVITE") == 0)
+		INVITE(user, event, _params);
 	else if (_command.compare("NOTICE") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0)
 		cmdKick(user, event);
 	else if (_command.compare("TOPIC") == 0)
 		cmdTopic(user, event, _params);
+	else if (_command.compare("/JOKE") == 0)
+		bot(event);
 	else
 		sendMessage(user, event, " Command not found", 000);
 	user->clearCmdBuffer();
