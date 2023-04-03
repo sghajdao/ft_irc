@@ -3,12 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+<<<<<<< HEAD
 /*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
 /*   Updated: 2023/04/03 17:45:43 by mlalouli         ###   ########.fr       */
+=======
+<<<<<<< HEAD
+/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
+/*   Updated: 2023/03/28 05:47:47 by mlalouli         ###   ########.fr       */
+=======
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
+/*   Updated: 2023/03/29 01:43:30 by ibenmain         ###   ########.fr       */
+>>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
+>>>>>>> 93d2f424c5d5861c7c3f012e889d576ee2180193
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #include "messagerror.hpp"
 #include "server.hpp"
@@ -232,10 +248,15 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0)
 		cmdPart(user, event, _params);
+
+	else if (_command.compare("INVITE") == 0)
+		INVITE(user, event, _params);
 	else if (_command.compare("MODE") == 0)
 		cmdMode(user, event, _params);
 	else if (_command.compare("INVITE") == 0)
 		INVITE(user, event, _params);
+	// else if (_command.compare("INVITE") == 0)
+	// 	INVITE(user, event, _params);
 	else if (_command.compare("NOTICE") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0)
@@ -244,7 +265,6 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdTopic(user, event, _params);
 	else if (_command.compare("/JOKE") == 0)
 		bot(event);
-	else
 		sendMessage(user, event, " Command not found", 000);
 	user->clearCmdBuffer();
 }
