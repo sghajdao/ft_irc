@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/05 15:54:28 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/05 16:00:35 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/06 01:13:02 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void	Server::sendMessage_bot(std::string nickname, const struct kevent& event)
 		cout << "client disconnected: " << event.ident << '\n';
 	}
 }
+
 void Server::boot(const struct kevent& event) {
     // Create an array of messages
     std::string messages[] = {

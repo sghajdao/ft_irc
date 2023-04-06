@@ -1,5 +1,3 @@
-
-
 NAME_P := ircserv
 
 CC = c++
