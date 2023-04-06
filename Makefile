@@ -4,11 +4,11 @@ NAME_P := ircserv
 
 CC = c++
 
-CFLAGS = 
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 
 INC = server.hpp User.hpp Channel.hpp messagerror.hpp
 
-SRC = main.cpp server.cpp User.cpp parsing.cpp Channel.cpp commands.cpp bot.cpp
+SRC = main.cpp server.cpp User.cpp parsing.cpp Channel.cpp commands.cpp boot.cpp
 
 OBJECTS = $(SRC:.cpp=.o)
 
@@ -16,7 +16,7 @@ all: $(NAME_P)
 
 $(NAME_P): $(OBJECTS)
 	@echo "\033[0;32m\n\nCompiling server..."
-	@$(CC) -o $(NAME_P) $(OBJECTS)
+	@$(CC) -o $(NAME_P) $(OBJECTS) -fsanitize=address
 	@echo "\n\033[0;32mDone."
 
 %.o:%.cpp $(INC)

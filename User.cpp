@@ -1,7 +1,10 @@
 #include <unistd.h>
 #include "User.hpp"
+#include "server.hpp"
 
-User::User(int fd, const string& host) : _sd(fd), _host(host), _isQuiting(false) { }
+User::User(int fd, const string& host) : _sd(fd), _host(host), _isQuiting(false) {
+
+}
 
 User::~User() {
     close(_sd);
@@ -73,6 +76,9 @@ bool User::getIsNick(void) const {
     return _nick;
 }
 
+void User::setFd(int fd) {
+    _sd = fd;
+}
 void User::setPassword(const string& pwd) {
     _password = pwd;
 }
@@ -166,11 +172,8 @@ void User::deleteChannelUser(string channel){
     vector<string>::iterator it;
 
     it = _channelOfUser.begin();
-    for (int i = 0; i < _channelOfUser.size(); i++)
-    {
-        if (it != _channelOfUser.end())
-    	    _channelOfUser.erase(it);
-    }
+    if (it->find(channel))
+        _channelOfUser.erase(it);
 }
 
 void User::addChannelOperator(string channel){
@@ -178,19 +181,16 @@ void User::addChannelOperator(string channel){
 }
 
 void User::deleteChannelOperator(string channel){
-    vector<string>::iterator it;
+vector<string>::iterator it;
 
     it = _channelOfOperatore.begin();
-    for (int i = 0; i < _channelOfOperatore.size(); i++)
-    {
-        if (it != _channelOfOperatore.end())
-    	    _channelOfOperatore.erase(it);
-    }
+    if (it->find(channel))
+        _channelOfOperatore.erase(it);
 }
 
 bool User::SearchChannelOperator(string channel){
 
-    for (int i = 0; i < _channelOfOperatore.size(); i++)
+    for (size_t i = 0; i < _channelOfOperatore.size(); i++)
     {
         if (_channelOfOperatore[i] == channel)
             return (true);
@@ -200,10 +200,25 @@ bool User::SearchChannelOperator(string channel){
 
 bool User::SearchChannelUser(string channel){
 
-    for (int i = 0; i < _channelOfUser.size(); i++)
+    for (size_t i = 0; i < _channelOfUser.size(); i++)
     {
         if (_channelOfUser[i] == channel)
             return (true);
     }
     return (false);
+}
+
+string User::ft_hostname()
+{
+	char __hostname[50];
+
+	if (gethostname(__hostname, sizeof(__hostname)) == -1)
+		cout << "Error :hostname\n";
+	return (__hostname);
+	
+}
+
+vector<string> User::getUser()
+{
+    return (_channelOfUser);
 }

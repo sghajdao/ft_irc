@@ -3,28 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-<<<<<<< HEAD
-/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/03 17:45:43 by mlalouli         ###   ########.fr       */
-=======
-<<<<<<< HEAD
-/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/03/28 05:47:47 by mlalouli         ###   ########.fr       */
-=======
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/12 16:56:18 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/03/29 01:43:30 by ibenmain         ###   ########.fr       */
->>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
->>>>>>> 93d2f424c5d5861c7c3f012e889d576ee2180193
+/*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
+/*   Updated: 2023/04/05 15:55:59 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 #include "messagerror.hpp"
 #include "server.hpp"
@@ -34,7 +18,7 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
 	struct sockaddr_in serverAddr;
 	if ((_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		shutDown("socket() error");
-	
+
 	memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -93,11 +77,6 @@ void Server::createNewClientSocket(void) {
 
 	user = new User(clientSocket, hostStr);
 	_allUser.insert(make_pair(clientSocket, user));
-	// map<int, User *>::iterator it;
-	// it = _allUser.begin();
-	// cout << it->second->getFd() << endl;
-	// it++;
-	// cout << it->second->getFd() << endl;
 }
 
 void Server::run() {
@@ -140,12 +119,23 @@ void Server::recvClientData(const struct kevent& event) {
 	targetUser->clearCmdBuffer();
 }
 
-void	Server::sendMessage(User *user, const struct kevent& event, std::string msg, int code)
+bool Server::getUesrNickname(string nickname)
+{
+    map<int, User *>::iterator it;
+    it = _allUser.begin();
+
+    for (; it != _allUser.end(); it++)
+    {
+    	if (it->second->getNickname() == nickname)
+    		return (1);
+    }
+    return (0);
+};
+
+void	Server::sendMessage(const struct kevent& event, std::string msg)
 {
 	int sendBytes;
-	std::string name = user->getNickname();
-	name = ":" + name + " * " + to_string(code) + msg + "\n";
-	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
+	sendBytes = send(event.ident, msg.c_str(), msg.size(), 0);
 	if (sendBytes <= 0) {
 		if (sendBytes == -1 && errno == EAGAIN) {
 			errno = 0;
@@ -160,9 +150,9 @@ void	Server::sendMessage(User *user, const struct kevent& event, std::string msg
 void	Server::checkPassword(std::vector<string> tab, User *user, const struct kevent& event)
 {
 	if (tab.size() < 1)
-	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
 	else if(tab.size() > 1)
-	 	sendMessage(user, event, ERROR, 404);
+	 	sendMessage_error(user->getNickname(), event, ERROR, 404);
 	else
 	{
 		if (tab[0].compare(getpassword()) == 0)
@@ -171,12 +161,14 @@ void	Server::checkPassword(std::vector<string> tab, User *user, const struct kev
 			user->setIsPass();
 		}
 		else
-	 		sendMessage(user, event, ERR_PASSWDMISMATCH, 464);
+	 		sendMessage_error(user->getNickname(), event, ERR_PASSWDMISMATCH, 464);
 	}
 }
 
 int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent& event)
 {
+	(void)user;
+	(void)event;
 	for (map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++)
 	{
 		if (tab[0].compare(it->second->getNickname()) == 0)
@@ -188,34 +180,34 @@ int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent&
 void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent& event)
 {
 	if (tab.size() < 4)
-	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
 	else if(tab.size() > 4)
-	 	sendMessage(user, event, ERROR, 404);
+	 	sendMessage_error(user->getNickname(), event, ERROR, 404);
 	else
 	{
-		if (checkUserExist(tab, user, event))
-			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
-		else
-		{
+		// if (checkUserExist(tab, user, event))
+		// 	sendMessage_error(user->getNickname(), event, ERR_ALREADYREGISTERED, 464);
+		// else
+		// {
 	 		user->setUsername(tab[0]);
 	 		user->setHostname(tab[1]);
 	 		user->setServername(tab[2]);
 	 		user->setRealname(tab[3]);
 			user->setIsUser();
-		}
+		// }
 	}
 }
 
 void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent& event)
 {
 	if (tab.size() < 1)
-	 	sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
 	else if(tab.size() > 1)
-	 	sendMessage(user, event, ERROR, 404);
+	 	sendMessage_error(user->getNickname(), event, ERROR, 404);
 	else
 	{
 		if (checkNickExist(tab, user, event))
-			sendMessage(user, event, ERR_ALREADYREGISTERED, 464);
+			sendMessage_error(user->getNickname(), event, ERR_ALREADYREGISTERED, 464);
 		else
 		{
 	 		user->setNickname(tab[0]);
@@ -228,66 +220,48 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
 	if (!user->getRegistred())
 	{
-		if (_command != "PASS" && _command != "USER" && _command != "NICK")
-			sendMessage(user, event, ERR_REGISTERED, 000);
-		else if (_command == "PASS" || _command == "USER" || _command == "NICK")
+		if ((_command != "PASS" && _command != "pass") && (_command != "USER" && _command != "user") && (_command != "NICK" && _command != "nick"))
+			sendMessage_error(user->getNickname(), event, ERR_REGISTERED, 000);
+		else if (_command == "PASS" || _command != "pass"|| _command == "USER" || _command != "user" || _command == "NICK" || _command != "nick")
 		{
-			if (_command.compare("PASS") == 0 && !user->getIsPass())
+			if ((_command.compare("PASS") == 0 || _command.compare("pass") == 0) && !user->getIsPass())
 				Server::checkPassword(_params, user, event);
-			else if(_command.compare("USER") == 0 && !user->getIsUser())
+			else if((_command.compare("USER") == 0 || _command.compare("user") == 0) && !user->getIsUser())
 				Server::checkUser(_params, user, event);
-			else if(_command.compare("NICK") == 0)
+			else if(_command.compare("NICK") == 0 || _command.compare("nick") == 0)
 				Server::checkNick(_params, user, event);
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
 			Server::authentication(_params, user, event);
 	}
-	else if (_command.compare("PRIVMSG") == 0)
+	else if (_command.compare("PRIVMSG") == 0 || _command.compare("privmsg") == 0)
 		cmdPrivmsg(user, event);
-	else if (_command.compare("JOIN") == 0)
+	else if (_command.compare("JOIN") == 0 || _command.compare("join") == 0)
 		cmdJoin(user, event, _params);
-	else if (_command.compare("PART") == 0)
+	else if (_command.compare("PART") == 0 || _command.compare("part") == 0)
 		cmdPart(user, event, _params);
-
-	else if (_command.compare("INVITE") == 0)
-		INVITE(user, event, _params);
-	else if (_command.compare("MODE") == 0)
+	else if (_command.compare("INVITE") == 0 || _command.compare("invite") == 0)
+		cmdInvite(user, event, _params);
+	else if (_command.compare("MODE") == 0 || _command.compare("mode") == 0)
 		cmdMode(user, event, _params);
-	else if (_command.compare("INVITE") == 0)
-		INVITE(user, event, _params);
-	// else if (_command.compare("INVITE") == 0)
-	// 	INVITE(user, event, _params);
-	else if (_command.compare("NOTICE") == 0)
-		cmdNotice(user, event);
-	else if (_command.compare("KICK") == 0)
-		cmdKick(user, event);
-	else if (_command.compare("TOPIC") == 0)
+	// else if (_command.compare("NOTICE") == 0 || _command.compare("notice") == 0)
+	// 	cmdNotice(user, event);
+	// else if (_command.compare("KICK") == 0 || _command.compare("kick") == 0)
+	// 	cmdKick(user, event);
+	else if (_command.compare("TOPIC") == 0 || _command.compare("topic") == 0)
 		cmdTopic(user, event, _params);
-	else if (_command.compare("/JOKE") == 0)
-		bot(event);
-		sendMessage(user, event, " Command not found", 000);
+	else if (_command.compare("QUIT") == 0 || _command.compare("quit") == 0)
+		cmdQuit(user, event, _params);
+	else if (_command.compare("/JOKE") == 0 || _command.compare("/joke"))
+		boot(event);
+	else
+		sendMessage_error(_command, event, " :Command not found", 912);
 	user->clearCmdBuffer();
-}
-
-void	Server::sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code)
-{
-	int sendBytes;
-	std::string name = nickname;
-	name = to_string(code) + " * " + name + msg + "\n";
-	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
-	if (sendBytes <= 0) {
-		if (sendBytes == -1 && errno == EAGAIN) {
-			errno = 0;
-			return;
-		}
-		cerr << "client send error!" << endl;
-		_allUser.erase(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
-	}
 }
 
 void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& event)
 {
+	(void)user;
 	int	   sendBytes;
 	sendBytes = send(event.ident, buffer.c_str(), buffer.size(), 0);
 	if (sendBytes <= 0) {
@@ -303,15 +277,13 @@ void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& e
 
 void	Server::authentication(std::vector<string> tab, User* user, const struct kevent& event)
 {
+	(void)tab;
 	time_t now = time(0);
 	char *date_time = ctime(&now);
-	char __hostname[50];
-
-	if (gethostname(__hostname, sizeof(__hostname)) == -1)
-		cout << "Error \n";
-	std::string buffer = ":" + string(__hostname) + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
-    buffer += ":" + string(__hostname) + " 002 " +  user->getNickname() + " :Your host is " + string(__hostname) + ", running version leet-irc 1.0.0\r\n";
-    buffer += ":" + string(__hostname) + " 003 " +  user->getNickname() + " :This server has been started " + date_time + "\r\n";
+	string __hostname = user->ft_hostname();
+	std::string buffer = ":" + __hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
+    buffer += ":" + __hostname + " 002 " +  user->getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+    buffer += ":" + __hostname + " 003 " +  user->getNickname() + " :This server has been started " + date_time + "\r\n";
 	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
@@ -343,8 +315,7 @@ void Server::handleEvent(const struct kevent& event) {
 		if (event.ident == (const uintptr_t)_sd)
 			throw(runtime_error("server socket error"));
 		else {
-			User *targetUser = _allUser[event.ident];
-
+			// User *targetUser = _allUser[event.ident];
 			cerr << "client socket error" << endl;
 		}
 	} else if (event.filter == EVFILT_READ) {

@@ -1,6 +1,5 @@
 #ifndef USER_HPP
 # define USER_HPP
-
 # include <string>
 # include <vector>
 
@@ -27,7 +26,9 @@ class User {
 		vector<string> _channelOfOperatore;
 
 	public:
-		User(void);
+		User(void){
+
+		};
 		User(const User& user);
 		User& operator=(const User& user);
         User(int fd, const string& host);
@@ -66,6 +67,7 @@ class User {
 		void setIsPass(void);
 		void setIsNick(void);
 		void setRegistred(void);
+		void setFd(int fd);
 
 		void setCmdBuffer(const string& src);
 		void clearCmdBuffer(void);
@@ -73,6 +75,9 @@ class User {
 		void clearReplyBuffer(void);
 		void addToCmdBuffer(const string& src);
 		void addToReplyBuffer(const string& src);
+		string ft_hostname();
+		vector<string> getUser();
+
 };
 
 #endif

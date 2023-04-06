@@ -3,14 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlalouli <mlalouli@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/03 18:09:46 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/03 18:09:54 by mlalouli         ###   ########.fr       */
+/*   Created: 2023/03/28 05:46:54 by mlalouli          #+#    #+#             */
+/*   Updated: 2023/04/05 15:57:23 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
@@ -36,7 +34,7 @@ using namespace std;
 class User;
 class Channel;
 class Server {
-    private:
+    public:
         int _sd;
         int _kq;
         int _port;
@@ -44,9 +42,8 @@ class Server {
         string _command;
         vector<string> _params;
         map<int, User *> _allUser;
-        map<string, User *> _allUser1;
         map<string, Channel *> _allChannel;
-        vector<struct kevent> eventList; // kernel event notification mechanism
+        vector<struct kevent> eventList;
         struct kevent _waitingEvents[8];
 
     public:
@@ -63,11 +60,10 @@ class Server {
         void sendDataToClient(const struct kevent& event);
         void handleEvent(const struct kevent& event);
         void run(void);
-        void bot(const struct kevent& event);
         void shutDown(const string& msg);
         void __parssingCommand(User* user, const struct kevent& event);
         void checkPassword(std::vector<string> tab, User* user, const struct kevent& event);
-        void sendMessage(User *user, const struct kevent& event, std::string msg, int code);
+        void sendMessage(const struct kevent& event, std::string msg);
         void checkUser(std::vector<string> tab, User* user, const struct kevent& event);
         void checkNick(std::vector<string> tab, User* user, const struct kevent& event);
         void authentication(std::vector<string> tab, User* user, const struct kevent& event);
@@ -82,9 +78,8 @@ class Server {
         Channel* findChannelByName(const string& name) const;
         Channel* addChannel(const string& name);
         void deleteChannel(const string& name);
-        int INVITE(User *user, const struct kevent event, vector<string> &invite);
-        void    sendMessage_bot(string nickname, const struct kevent& event);
-        void sendMessage_INVITE(string nickname, const struct kevent& event, std::string msg, int code);
+        void cmdInvite(User *user, const struct kevent event, vector<string> invite);
+        void sendMessage_error(string nickname, const struct kevent& event, std::string msg, int code);
         const string createReplyForm(void) const;
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
@@ -92,8 +87,12 @@ class Server {
         void cmdMode(User *user, const struct kevent& event, vector<string> tab);
         void cmdKick(User *user, const struct kevent& event, vector<string> tab);
         void cmdTopic(User *user, const struct kevent& event, vector<string> tab);
+        void cmdQuit(User *user, const struct kevent& event, vector<string> tab);
         void cmdNotice(User *user, const struct kevent& event);
         void creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel);void cmdKick(User *user, const struct kevent& event);
+        bool getUesrNickname(string nickname);
+        void boot(const struct kevent& event);
+        void sendMessage_bot(string nickname, const struct kevent& event);
 };
 
 #endif

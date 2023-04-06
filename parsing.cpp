@@ -6,6 +6,8 @@
 
 int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent& event)
 {
+	(void)user;
+	(void)event;
 	map<int, User *>::iterator it = _allUser.begin();
 	for (; it != _allUser.end(); it++)
 	{
@@ -129,7 +131,7 @@ const string Server::createReplyForm(void) const {
 
 void Server::cmdPrivmsg(User *user, const struct kevent& event) {
     if (_params.size() < 2) {
-		sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
+		sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
 		return;
 	}
 
@@ -140,10 +142,10 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 
             targetUser = findClientByNickname(targetName);
             if (targetUser == NULL) {
-				sendMessage(user, event, ERR_NOSUCHNICK, 401);
+				sendMessage_error(user->getNickname(), event, ERR_NOSUCHNICK, 401);
 				continue;
 			}
-            targetUser->addToReplyBuffer(":"+user->getSource()+" " + getCommand()+" " + targetUser->getNickname()+" " + ":" + getParams()[1]);
+            targetUser->addToReplyBuffer(user->getSource() + " " + getCommand() + targetUser->getNickname() + ": " + getParams()[1] + "\r\n");
     }
 }
 
@@ -151,17 +153,17 @@ vector<string>	ft_split_line(string str)
 {
 	vector<string> key;
 
-	if (str.find(","))
-	{
+	// if (str.find(","))
+	// {
 		char *tmp = strtok(const_cast<char *>(str.c_str()), ",");
 		while (tmp != NULL)
 		{
 			key.push_back(tmp);
 			tmp = strtok(NULL, ",");
 		}
-	}
-	else
-		key[0] = str;
+	// }
+	// else
+	// 	key[0] = str;
 	return(key);
 }
 
@@ -169,14 +171,9 @@ int calculate_size(vector<string> str)
 {
     int length = 0;
 
-   	for (int i = 0; i < str.size(); i++)
+   	for (size_t i = 0; i < str.size(); i++)
 		length++;
     return length;
-
-}
-
-void	Server::creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel)
-{
 
 }
 
@@ -186,54 +183,79 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 	std::vector<string> key_channel;
 	int x = 0;
 	if (channel.empty())
-	{
-		sendMessage(user, event, ERR_NEEDMOREPARAMS, 461);
-		return ;
-	}
-	name_channel = ft_split_line(channel[0]);
+		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
+	name_channel = split(channel[0], ',');
 	if (calculate_size(channel) > 1)
 	{
-		key_channel = ft_split_line(channel[1]);
+		key_channel = split(channel[1], ','); //TODE ,,,12,,,15,
 		x = calculate_size(key_channel);
 	}
-	for(int i = 0; i < name_channel.size(); i++)
+	for(size_t i = 0; i < name_channel.size(); i++)
 	{
 		map<string, Channel *>::iterator it;
-
-		it = _allChannel.find(name_channel[i]);
 		if ((name_channel[i][0] != '#' && name_channel[i][0] != '&') || (name_channel[i].size() == 1 && (name_channel[i][0] == '#' || name_channel[i][0] == '&')))
-		{
-			sendMessage(user, event, " :Bad Channel Mask", 461);
-			return ;
-		}
+			return(sendMessage_error(name_channel[i], event, ERR_BADCHANMASK, 915));
+		it = _allChannel.find(name_channel[i]);
 		if (it != _allChannel.end())
 		{
 			if (it->second->findUserIfExistByFd(user->getFd()))
-			{
-				sendMessage(user, event, " User deja exist ", 475);
-				return ;
-			}
+				return(sendMessage_error(user->getNickname(), event, " User already exists ", 911));
 			if (it->second->getFindPass() == 1)
 			{
 				if (x != 0)
 				{
-					if (it->second->getPassword() == key_channel[i])
+					if (it->second->getInvit() == 1)
 					{
-						it->second->addUser(event.ident, user);
-						user->addChannelUser(name_channel[i]);
-						sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
+						if (it->second->checkInvit(user->getNickname()))
+						{
+							if (it->second->getPassword() == key_channel[i])
+							{
+								it->second->addUser(event.ident, user);
+								user->addChannelUser(name_channel[i]);
+								sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+							}
+							else
+								sendMessage_error(key_channel[i], event, ERR_PASSWDMISMATCH, 464);
+						}
+						else
+							return(sendMessage_error(user->getNickname(), event, " :User not invited", 475));
 					}
 					else
-						sendMessage(user, event, ERR_BADCHANNELKEY, 475);
+					{
+						if (it->second->getPassword() == key_channel[i])
+						{
+							it->second->addUser(event.ident, user);
+							user->addChannelUser(name_channel[i]);
+							sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+						}
+						else
+							sendMessage_error(key_channel[i], event, ERR_PASSWDMISMATCH, 464);
+					}
+					
 				}
 				else
-					sendMessage(user, event, ERR_BADCHANNELKEY, 475);
+					sendMessage_error(user->getNickname(), event, ERR_BADCHANNELKEY, 475);
 			}
 			else
 			{
-				it->second->addUser(event.ident, user);
-				user->addChannelUser(name_channel[i]);
-				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
+				if (it->second->getInvit() == 1)
+				{
+					if (it->second->checkInvit(user->getNickname()))
+					{
+						it->second->addUser(event.ident, user);
+						user->addChannelUser(name_channel[i]);
+						sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+					}
+					else
+						return(sendMessage_error(user->getNickname(), event, " :User not invited", 475));
+				}
+				else
+				{
+					it->second->addUser(event.ident, user);
+					user->addChannelUser(name_channel[i]);
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+				}
+
 			}
 		}
 		else
@@ -243,16 +265,18 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				Channel *channel;
 				User 	*tmp;
 
-				channel = new Channel(name_channel[i].c_str(), "");
+				channel = new Channel(name_channel[i].c_str());
 				channel->addUser(event.ident, user);
 				user->addChannelUser(name_channel[i]);
 				user->addChannelOperator(name_channel[i]);
 				tmp = new User(*user);
-				tmp->setNickname("@" + tmp->getNickname());
+				tmp->setNickname("@" + user->getNickname());
 				channel->addOperators(event.ident, tmp);
-				channel->setTopic(false);
+				channel->setFoundtopic(false);
+				channel->setFindPass(false);
+				channel->setInvit(false);
 				_allChannel.insert(make_pair(name_channel[i], channel));
-				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
 			}
 			else
 			{
@@ -264,12 +288,13 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				user->addChannelUser(name_channel[i]);
 				user->addChannelOperator(name_channel[i]);
 				tmp = new User(*user);
-				tmp->setNickname("@" + tmp->getNickname());
+				tmp->setNickname("@" + user->getNickname());
 				channel->addOperators(event.ident, tmp);
-				channel->setTopic(false);
+				channel->setFoundtopic(false);
 				channel->setFindPass(true);
+				channel->setInvit(false);
 				_allChannel.insert(make_pair(name_channel[i], channel));
-				sendMessage(user, event, " :You are reregister in the channel " + name_channel[i], 461);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
 				x = x - 1;
 			}
 		}
@@ -279,9 +304,10 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 	it = _allChannel.begin();
 	for (; it != _allChannel.end(); it++)
 	{
-		cout << "channel: " << it->first << " pass is :" << it->second->getFindPass() << endl;
+		cout << "channel: " << it->first << " pass is: " << it->second->getFindPass() << endl;
 		it->second->getAllUser();
 		it->second->getOperator();
+		it->second->getInvite();
 	}
 	cout << "--------end----------\n";
 }
@@ -293,57 +319,54 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 	map<string, Channel *>::iterator it;
 	int x = 0;
 	if (tab.empty())
-	{
-		sendMessage(user, event, " :Not enough parameters", 461);
-		return ;
-	}
-	channel_leave = ft_split_line(tab[0]);
+		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
+	channel_leave = split(tab[0], ',');
 	if (calculate_size(tab) > 1)
 	{
-		reason = ft_split_line(tab[1]);
+		reason = split(tab[1], ',');
 		x = 1;
 	}
-	for (int i = 0 ; i < channel_leave.size(); i++)
+	for (size_t i = 0 ; i < channel_leave.size(); i++)
 	{
 		it = _allChannel.find(channel_leave[i]);
 		if (it != _allChannel.end())
 		{
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
-				string str;
+				User 	*tmp1;
 				User 	*tmp;
 				it->second->deleteUser(user->getFd());
 				it->second->deleteOperator(user->getFd());
-				user->deleteChannelUser(channel_leave[i]);
-				user->deleteChannelOperator(channel_leave[i]);
 				if (it->second->_userList.size() != 0 && !it->second->findOperatorIfExist(user->getFd()))
 				{
-					str = it->second->getSecondOperator();
-					tmp = new User(user->getFd() + 1, "");
-					tmp->setNickname("@" + str);
-					it->second->addOperators(user->getFd() + 1, tmp);
+					tmp = it->second->findSecondUser(user->getNickname());
+					tmp1 = new User(*tmp);
+					tmp1->setFd(tmp->getFd());
+					cout << "here :" << tmp1->getFd() << endl;
+					tmp1->setNickname("@" + tmp1->getNickname());
+					it->second->addOperators(tmp1->getFd(), tmp1);
 				}
-				if (reason.empty())
-					sendMessage(user, event, " :user deleted from channel " + channel_leave[i], 912);
+				if (reason.size() == 0)
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " PART : " + channel_leave[i] + "\n");
 				else
-					sendMessage(user, event, " :user deleted from channel " + channel_leave[i] + " for reason " + reason[0], 912);
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " PART : " + channel_leave[i] + " for reason " + reason[0] + "\n");
 			}
 			else if (it->second->findUserIfExistByFd(user->getFd()))
 			{
 				it->second->deleteUser(user->getFd());
 				user->deleteChannelUser(channel_leave[i]);
 				if (x == 0)
-					sendMessage(user, event, " :user deleted from channel " + channel_leave[i], 912);
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " PART : " + channel_leave[i] + "\n");
 				else
-					sendMessage(user, event, " :user deleted from channel " + channel_leave[i] + " for reason " + reason[0], 912);
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " PART : " + channel_leave[i] + " for reason " + reason[0] + "\n");
 			}
 			else
-				sendMessage(user, event, " :You're not on that channel", 442);
-			if (it->second->_userList.empty()  && it->second->_operators.empty())
+				sendMessage_error(user->getNickname(), event, " :You're not reregister in this channel :" + channel_leave[i], 915);
+			if (it->second->_userList.empty() && it->second->_operators.empty())
 				_allChannel.erase(channel_leave[i]);
 		}
 		else
-			sendMessage(user, event, " :No such channel", 403);
+			sendMessage_error(channel_leave[i], event, ERR_NOSUCHCHANNEL, 403);
 	}
 	cout << "--------begin--------\n";
 	map<string, Channel *>::iterator it1;
@@ -353,6 +376,7 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 		cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 		it1->second->getAllUser();
 		it1->second->getOperator();
+		it1->second->getInvite();
 	}
 	cout << "--------end----------\n";
 }
@@ -360,64 +384,92 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 {
 	map<string, Channel *>::iterator it;
-	if (tab.empty())
-	{
-		sendMessage(user, event, " :Not enough parameters", 461);
-		return ;
-	}
+	string str;
+	User *tmp;
+	User *tmp1;
+	if (tab.size() == 0 || tab.size() > 2)
+		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 	it = _allChannel.find(tab[0]);
 	if (it != _allChannel.end())
-	{
+	{	// 4 arguments
 		if (tab[1] == "+k")
 		{
+			if (tab.size() < 2)
+				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 1)
 			{
 				it->second->editPassword(tab[2]);
-				sendMessage(user, event, " :You are edit a password to this channel", 461);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " EDIT A PASSWORD : " + tab[0] + "\n");
 			}
 			else if(it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 0)
 			{
 				it->second->editPassword(tab[2]);
 				it->second->setFindPass(true);
-				sendMessage(user, event, " :You are add a password to this channel", 461);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " ADD A PASSWORD : " + tab[0] + "\n");
 			}
 			else
-				sendMessage(user, event, " :You are not a operator in this channel", 461);
-		}
+				sendMessage_error(user->getNickname(), event, " You're not channel operator :", 916);
+		} // 3 arguments
 		else if (tab[1] == "-k")
 		{
-			if (user->SearchChannelOperator("@" + user->getNickname()))
+			if (it->second->findOperatorIfExistByNick(user->getNickname()))
 			{
 				it->second->deletePassword();
 				it->second->setFindPass(false);
-				sendMessage(user, event, " :You are delete a password to this channel", 461);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " DELETE A PASSWORD : " + tab[0] + "\n");
 			}
 			else
-				sendMessage(user, event, " :You are not a operator in this channel", 461);
-		}
+				sendMessage_error(user->getNickname(), event, " :Not a operator in this channel", 912);
+		} // 4 arguments
 		else if(tab[1] == "+o")
 		{
-			if (it->second->findUserIfExistByNick(tab[2]) && !it->second->findOperatorIfExistByNick(tab[2]))
+			if (tab.size() < 2)
+				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
+			if (it->second->findUserIfExistByNick(user->getNickname()) && it->second->findOperatorIfExistByNick(user->getNickname()))
 			{
-				User *tmp;
-				tmp = new User(it->second->getFdOfUser(tab[2]), "");
-				tmp->setNickname("@" + tab[2]);
-				it->second->addOperators(it->second->getFdOfUser(tab[2]), tmp);
-				tmp->addChannelOperator(it->second->getName());
-				sendMessage(user, event, " You are add a operator in this channel", 461);
+				if (it->second->findOperatorIfExistByNick(tab[2]))
+					return (sendMessage_error(user->getNickname(), event, " :You are operator in this channel", 912));
+				else if (it->second->findUserIfExistByNick(tab[2]))
+				{
+					tmp1 = new User();
+					tmp1->setFd(it->second->getFdOfUser(tab[2]));
+					tmp1->setNickname("@" + tab[2]);
+					it->second->addOperators(it->second->getFdOfUser(tab[2]), tmp1);
+					// tmp1->addChannelOperator(it->second->getName());
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " ADD A OPERATOR : " + tab[0] + "\n");
+				}
+				else
+					sendMessage_error(tab[2], event, " :You are not a member in this channel", 912);
 			}
-			else if (it->second->findOperatorIfExistByNick(tab[2]))
-				sendMessage(user, event, " this user is operator in this channel", 461);
 			else
-					sendMessage(user, event, " This user not a member in this channel", 461);
+				sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 912);
 		}
 		else if(tab[1] == "-o")
-		{
-			if (it->second->findUserIfExistByNick(tab[2]) && it->second->findOperatorIfExistByNick(tab[2]))
-				it->second->deleteOperator(it->second->getFdOfUser(tab[2]));
+		{   // 4 arguments
+			if (tab.size() < 2)
+				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
+			if (it->second->findUserIfExistByNick(user->getNickname()) && it->second->findOperatorIfExistByNick(user->getNickname()))
+			{
+				if (it->second->_operators.size() == 1 && it->second->_userList.size() == 1)
+					return(sendMessage_error(user->getNickname(), event, " :You can't delete all operator", 912));
+				else if (it->second->findOperatorIfExistByNick(tab[2]))
+				{
+					it->second->deleteOperator(it->second->getFdOfUser(tab[2]));
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " DELETE A OPERATOR : " + tab[0] + "\n");
+				}
+				if (it->second->_operators.size() == 0)
+				{
+					tmp = it->second->findSecondUser(tab[2]);
+					tmp1 = new User();
+					tmp1->setFd(tmp->getFd());
+					tmp1->setNickname("@" + tmp->getNickname());
+					it->second->addOperators(tmp->getFd(), tmp1);
+					// tmp1->addChannelOperator(it->second->getName());
+				}
+			}
 			else
-				sendMessage(user, event, " You are not a operator in this channel", 461);
-		}
+				sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 916);
+		} // all this 3 arguments
 		else if (tab[1] == "+t")
 			it->second->setTopic(true);
 		else if (tab[1] == "-t")
@@ -428,7 +480,7 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 			it->second->setInvit(false);
 	}
 	else
-		sendMessage(user, event, " This channel not found", 461);
+		sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403);
 	cout << "--------begin--------\n";
 	map<string, Channel *>::iterator it1;
 	it1 = _allChannel.begin();
@@ -437,126 +489,131 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 		it1->second->getAllUser();
 		it1->second->getOperator();
+		it1->second->getInvite();
 	}
 	cout << "--------end----------\n";
 }
->>>>>>> 77b5e503256ab2e2a6e08c68eadc0f5eaa3857a1
-
-/*
-	LOOP:
-	step 1: ghada t9albi 3la user libghti t invitie l chennel wax kain f map dyal users ila makanx return => error
-	step 2: ghada tchofi dak l user li ghadi invite wax howa operator olala (wax 3ando l7a9 invite)
-	LOOP:
-	step 3: ghadit tchofi channel wax kaina ola la ila kanet ghadi t invite dak user l channel makantch a return => error
-	(aytzad f map dyal _userList)
-
-*/
-
-int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
-{
-	if (invite.empty())
-		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
-	string nickname = invite[0];
-	string channel = invite[1];
-	std::map<string, User *>::iterator it;
-	
-	Channel *t = findChannelByName(channel);
-	if (t == NULL)
-		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
-	User *t0 = t->findUserByNick(nickname);
-	if (t0 == NULL)
-		return (sendMessage_INVITE(channel, event, ERR_NOSUCHNICK, 401), 0);
-	bool l = t->findOperatorIfExist(user->getFd());
-	if (l == false)
-		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
-	if (t0 != NULL)
-			return (sendMessage_INVITE(channel, event, ERR_USERONCHANNEL, 443), 0);
-	
-	sendMessage_INVITE(nickname + " ", event, channel, 341);
-	return (0);
-}
-// int Server::INVITE(User *user, const struct kevent event, vector<string> &invite)
-// {
-// 	if (invite.empty())
-// 		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461), 0);
-// 	string nickname = invite[0];
-// 	string channel = invite[1];
-
-// 	std::map<string, User *>::iterator it;
-	
-// 	Channel *t = findChannelByName(channel);
-// 	if (t == NULL)
-// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
-// 	User *t0 = t->findUserByNick(nickname);
-// 	if (t0 == NULL)
-// 		return (sendMessage_INVITE(channel, event, ERR_NOSUCHNICK, 401), 0);
-// 	bool l = t->findOperatorIfExistByNick(nickname);
-// 	if (l == false)
-// 		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
-// 	if (t0 != NULL)
-// 		return (sendMessage_INVITE(channel, event, ERR_USERONCHANNEL, 443), 0);
-// 	sendMessage_INVITE(nickname + " ", event, channel, 341);
-// 	return (0);
-// }
-// 	std::map<string, Channel *>::iterator it;
-// 	char *n, *ch;
-// 	bool ft = false;
-// 	cout << _allUser.size() << endl;
-// 	size_t i = 0;
-// 	for(; i < _params.size(); i++)
-// 	{
-// 		if (this->[i] == nickname)
-// 		{
-// 			ft = true;
-// 			break ;
-// 		}
-// 	}
-// 	if (ft == false)
-// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHNICK, 401), 0);
-// 	it = _allChannel.find(channel);
-// 	if (it == this->_allChannel.end())
-// 		return (sendMessage_INVITE(nickname, event, ERR_NOSUCHCHANNEL, 403), 0);
-// 	if (it->second->_operators.find(user->_nick) == it->second->_operators.end())
-// 		return (sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 482), 0);
-// 		/*start*/
-// 	if (it->second->_userList.find(user->_nick) != it->second->_userList.end())
-// 		sendMessage_INVITE(channel, event, ERR_CHANOPRIVSNEEDED, 4000);
-// 	sendMessage_INVITE(nickname + " ", event, channel, 341);
-// 	return (0);
-// }
 
 void Server::cmdTopic(User *user, const struct kevent& event, vector<string> tab)
 {
 	map<string, Channel *>::iterator it;
+
 	if (tab.empty())
-		return (sendMessage(user, event, " empty", 461));
+		return (sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 	if (tab.size() != 1 && tab.size() != 2)
-		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461));
+		return (sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 	it = _allChannel.find(tab[0]);
 	if (it != _allChannel.end())
 	{
-		if (it->second->findOperatorIfExistByNick("@" + user->getNickname()) && it->second->getTopic() == 1)
+		if (it->second->findUserIfExistByNick(user->getNickname()) &&  it->second->getTopic() == 0)
 		{
-			if (tab[1].empty() && it->second->getTopic())
-				cout << "no topic\n";
-			else if(!tab[1].empty())
-				it->second->setNametopic(tab[1]);
-			else
-				cout << it->second->getNametopic() << endl;
-
+			if (it->second->getFoundtopic() == 0)
+			{
+				if (tab.size() == 1)
+					sendMessage_error(tab[0], event, " :No topic in this channel ", 912);
+				else
+				{
+					if (tab.size() == 2)
+					{
+						it->second->setNametopic(tab[1]);
+						it->second->setFoundtopic(true);
+					}
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " TOPIC : " + it->second->getNametopic() + "\n");
+				}
+			}
+			else if (it->second->getFoundtopic() == 1)
+			{
+				if (tab.size() == 2)
+					it->second->setNametopic(tab[1]);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " TOPIC : " + it->second->getNametopic() + "\n");
+			}
 		}
-		else if (it->second->findUserIfExistByNick(user->getNickname()) && it->second->getTopic() == 0)
+		else if (it->second->findOperatorIfExistByNick(user->getNickname()) && it->second->getTopic() == 1)
 		{
-			if (tab[1].empty() && it->second->getTopic())
-				cout << "no topic\n";
-			else if(!tab[1].empty())
-				it->second->setNametopic(tab[1]);
+			if (it->second->getFoundtopic() == 0)
+			{
+				if (tab.size() == 1)
+					sendMessage_error(tab[0], event, " :No topic in this channel ", 912);
+				else
+				{
+					if (tab.size() == 2)
+					{
+						it->second->setNametopic(tab[1]);
+						it->second->setFoundtopic(true);
+					}
+					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " TOPIC : " + it->second->getNametopic() + "\n");
+				}
+			}
+			else if (it->second->getFoundtopic() == 1)
+			{
+				if (tab.size() == 2)
+					it->second->setNametopic(tab[1]);
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " TOPIC : " + it->second->getNametopic() + "\n");
+			}
+		}
+		else if (it->second->findUserIfExistByNick(user->getNickname()) && it->second->getTopic() == 1)
+		{
+			if (tab.size() == 1 && it->second->getFoundtopic() == 1)
+				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " TOPIC : " + it->second->getNametopic() + "\n");
+			else if (tab.size() == 1 && it->second->getFoundtopic() == 0)
+				sendMessage_error(tab[0], event, " :No topic in this channel ", 912);
 			else
-				cout << it->second->getNametopic() << endl;
+				sendMessage_error(tab[0], event, " :Not a operator in this channel ", 912);
 		}
 		else
-			return (sendMessage(user, event, "not mumber in this channel", 461));
+			return (sendMessage_error(tab[0], event, " :Not a mumber in this channel", 403));
 	}
 	else
-		return (sendMessage(user, event, ERR_NEEDMOREPARAMS, 461));
+		return (sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403));
+}
+
+void Server::cmdQuit(User *user, const struct kevent& event, vector<string> tab)
+{
+	(void)event;
+	(void)tab;
+	User 	*tmp1;
+	User 	*tmp;
+	vector<string> channel = user->getUser();
+	map<string, Channel *>::iterator it;
+	for (size_t i = 0; i < channel.size(); i++)
+	{
+		it = _allChannel.find(channel[i]);
+		if (it != _allChannel.end())
+		{
+			if (it->second->findUserIfExistByFd(user->getFd()))
+				it->second->deleteUser(user->getFd());
+			if (it->second->findOperatorIfExist(user->getFd()))
+			{
+				it->second->deleteOperator(user->getFd());
+				if (it->second->_userList.size() != 0 && !it->second->findOperatorIfExist(user->getFd()))
+				{
+					tmp = it->second->findSecondUser(user->getNickname());
+					tmp1 = new User(*tmp);
+					tmp1->setFd(tmp->getFd());
+					tmp1->setNickname("@" + tmp1->getNickname());
+					it->second->addOperators(tmp1->getFd(), tmp1);
+				}
+				if (it->second->_userList.empty() && it->second->_operators.empty())
+				{
+					delete it->second;
+					_allChannel.erase(channel[i]);
+				}
+			}
+		}
+	}
+	map<int, User *>::iterator it1;
+	it1 = _allUser.find(user->getFd());
+	if (it1 != _allUser.end())
+		_allUser.erase(it1);
+	close(user->getFd());
+	// cout << "--------begin--------\n";
+	// map<string, Channel *>::iterator it1;
+	// it1 = _allChannel.begin();
+	// for (; it1 != _allChannel.end(); it1++)
+	// {
+	// 	cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
+	// 	it1->second->getAllUser();
+	// 	it1->second->getOperator();
+	// }
+	// cout << "--------end----------\n";
 }

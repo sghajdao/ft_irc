@@ -4,7 +4,6 @@
 # include <map>
 # include <set>
 # include <vector>
-
 # include "server.hpp"
 
 using namespace std;
@@ -13,62 +12,87 @@ class User;
 
 class Channel {
     public:
-		string _name;
-		string _nametopic;
-    string _password;
+		std::string _name;
+		std::string _nametopic;
+    std::string _password;
     bool _findPass;
     bool _topic;
     bool _foundtopic;
     bool _invit;
-		map<int, User *> _userList;
-    map<int, User *> members;
-		map<int, User *> _operators;
-		// map<int, User *> bans;
+		std::map<int, User *> _userList;
+    // std::map<int, User *> members;
+		std::map<int, User *> _operators;
+    std::vector<std::string> _invite;
+		// std::map<int, User *> bans;
 
     public:
-        Channel(void);
-        Channel(string name, string password);
+        Channel(void)
+        {
+          
+        };
+        Channel(std::string name, std::string password);
         Channel(const Channel& channel);
         Channel& operator=(const Channel& channel);
-
-        Channel(const string& name);
+        Channel(const std::string& name);
         ~Channel();
         bool getFindPass() const;
         void setFindPass(bool pass);
         bool getTopic() const;
         void setTopic(bool topic);
         bool getFoundtopic() const;
-        void setNametopic(string nametopic);
-        string getNametopic();
+        void setNametopic(std::string nametopic);
+        std::string getNametopic();
         void setFoundtopic(bool foundtopic);
         bool getInvit() const;
         void setInvit(bool pass);
         void deletePassword();
-        void editPassword(string passwd);
-        string getPassword(void);
-        const string& getName(void) const;
-        const vector<string> getUserList(void) const;
-        void    setUserList(const User *user);
-        void    getAllUser(void);
-        const string    getUser(int fd);
+        void editPassword(std::string passwd);
+        std::string getPassword(void);
+        const std::string& getName(void) const;
+        const std::vector<std::string> getUserList(void) const;
+        void setUserList(const User *user);
+        void getAllUser(void);
+        const std::string    getUser(int fd);
         void    getOperator(void);
-        map<int, User *>    addSecondOperators(void);
-        string    getSecondOperator(void);
-        string getPassword() const;
+        void    getInvite(void);
+        std::map<int, User *>    addSecondOperators(void);
+        std::string getSecondOperator(void);
+        std::string getPassword() const;
         void addUser(int clientFd, User *user);
         void addOperators(int clientFd, User *user);
         int deleteUser(int clientFd);
         void deleteOperator(int clientFd);
         User* findUserByFd(const int clientFd);
+        User* findSecondUser(std::string nick);
+        User* findFirstUser();
         bool findUserIfExistByFd(const int clientFd);
-        bool findUserIfExistByNick(string nick);
-        bool findOperatorIfExistByNick(string nick);
+        bool findUserIfExistByNick(std::string nick);
         bool findOperatorIfExist(const int clientFd);
-        bool findOperatorIfExistByNick(string nick);
-        User* findUserByNick(const string& nickname);
+        bool findOperatorIfExistByNick(std::string nick);
+        User* findUserByNick(const std::string& nickname);
         void broadcast(Server *server, int ignoreF) const;
-        int getFdOfUser(string nick);
-        int getFdOfOperator(string nick);
+        int getFdOfUser(std::string nick);
+        int getFdOfOperator(std::string nick);
+        int checkInvit(std::string nick)
+        {
+            for (size_t i = 0; i < _invite.size(); i++)
+            {
+              if (_invite[i] == nick)
+                return(1);
+            }
+            return (0);
+        };
+        void deleteInvite(std::string nickname)
+        {
+          std::vector<std::string>::iterator it;
+
+          it = _invite.begin();
+          for (; it != _invite.end(); it++)
+          {
+            if (it->find(nickname))
+              _invite.erase(it);
+          }
+        };
 };
 
 #endif

@@ -26,17 +26,6 @@ const string& Channel::getName(void) const {
     return _name;
 }
 
-bool Channel::findOperatorIfExistByNick(string nick) {
-    map<int, User *>::iterator it;
-    it = _operators.begin();
-    for (; it != _operators.end(); it++)
-    {
-        if (it->second->getNickname() == "@" + nick)
-            return (true);
-    }
-    return (false);
-}
-
 void Channel::broadcast(Server *server, int ignoreFd) const {
     map<int, User *>::const_iterator it;
     const string msg = server->createReplyForm();
@@ -90,6 +79,7 @@ int Channel::deleteUser(int clientFd) {
     if (it == _userList.end()) return _userList.size();
     
     // clientSource = it->second->getSource();
+    // delete it->second; TODO
     _userList.erase(clientFd);
 
     if (_userList.empty()) return 0;
@@ -118,6 +108,24 @@ User* Channel::findUserByFd(const int clientFd) {
     it = _userList.find(clientFd);
     if (it == _userList.end()) return NULL;
     return it->second;
+}
+
+User* Channel::findFirstUser() {
+    map<int, User *>::iterator it;
+
+    it = _userList.begin();
+    if (it == _userList.end()) return NULL;
+    return it->second;
+}
+
+User* Channel::findSecondUser(string nick) {
+    map<int, User *>::iterator it;
+    for (it = _userList.begin() ; it != _userList.end(); it++)
+    {
+        if (it->second->getNickname() != nick)
+            return(it->second);
+    }
+    return (NULL);
 }
 
 bool Channel::findUserIfExistByFd(const int clientFd) {
@@ -200,18 +208,14 @@ User* Channel::findUserByNick(const string& nickname) {
 void    Channel::getAllUser(void)
 {
     map<int, User *>::iterator it;
-
     it = _userList.begin();
     for (; it != _userList.end(); it++)
-    {
         cout << "Users: " << it->second->getNickname() << endl;
-    }
 }
 
 const string    Channel::getUser(int fd)
 {
     map<int, User *>::iterator it;
-
     it = _userList.find(fd);
     return(it->second->getNickname());
 }
@@ -219,12 +223,15 @@ const string    Channel::getUser(int fd)
 void    Channel::getOperator(void)
 {
     map<int, User *>::iterator it;
-
     it = _operators.begin();
     for (; it != _operators.end(); it++)
-    {
         cout << "Operators: " << it->second->getNickname() << endl;
-    }
+}
+
+void    Channel::getInvite(void)
+{
+    for (size_t i = 0; i < _invite.size(); i++)
+        cout << "Invite: " << _invite[i] << endl;
 }
 
 string    Channel::getSecondOperator(void)
