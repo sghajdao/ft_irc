@@ -145,7 +145,7 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 				sendMessage_error(user->getNickname(), event, ERR_NOSUCHNICK, 401);
 				continue;
 			}
-            targetUser->addToReplyBuffer(user->getSource() + " " + getCommand() + targetUser->getNickname() + ": " + getParams()[1] + "\r\n");
+            targetUser->addToReplyBuffer(":"+user->getSource() + " " + getCommand() + targetUser->getNickname() + ": " + getParams()[1] + "\r\n");
     }
 }
 

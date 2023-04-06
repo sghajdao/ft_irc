@@ -73,6 +73,7 @@ class Channel {
         void broadcast(Server *server, int ignoreF) const;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
+        bool isOperator(User *user);
         int checkInvit(std::string nick)
         {
             for (size_t i = 0; i < _invite.size(); i++)

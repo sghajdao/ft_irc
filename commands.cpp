@@ -25,20 +25,28 @@ void Server::cmdNotice(User *user, const struct kevent& event) {
 
 void Server::cmdKick(User *user, const struct kevent& event){
 	if (_params.size() < 2) {
-		sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
+		sendMessage(event, ERR_NEEDMOREPARAMS);
 		return;
 	}
 
 	if (_params.size() == 2) {
 
+		if ((_params[0][0] != '#' && _params[0][0] != '&') || (_params[0].size() == 1 && (_params[0][0] == '#' || _params[0][0] == '&')))
+			sendMessage(event, " :Bad Channel Mask");
+
 		Channel *targetChannel = findChannelByName(_params[0]);
 		if (targetChannel == NULL) {
-			sendMessage_error(user->getNickname(), event, ERR_NOSUCHCHNL, 401);
+			sendMessage(event, ERR_NOSUCHCHNL);
 			return;
 		}
 
 		if (targetChannel->findUserByFd(user->getFd()) == NULL){
-			sendMessage_error(user->getNickname(), event, ERR_NOTINCHNL, 401);
+			sendMessage(event, ERR_NOTINCHNL);
+			return;
+		}
+
+		if (targetChannel->isOperator(user) == false){
+			sendMessage(event, ERR_NOTCHNLOPER);
 			return;
 		}
 
@@ -47,7 +55,7 @@ void Server::cmdKick(User *user, const struct kevent& event){
 			
 			User *targetUser = targetChannel->findUserByNick(*it);
 			if (targetUser == NULL) {
-				sendMessage_error(user->getNickname(), event, ERR_USERNOTINCHNL, 401);
+				sendMessage(event, ERR_USERNOTINCHNL);
 				continue;
 			}
 

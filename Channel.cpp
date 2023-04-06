@@ -311,3 +311,12 @@ void Channel::deletePassword()
 {
     _password.clear();
 }
+
+bool Channel::isOperator(User *user){
+    for (map<int, User *>::const_iterator it = _operators.begin(); it != _operators.end(); ++it){
+        if (user->getIsNick() == (*it).second->getIsNick()){
+            return true;
+        }
+    }
+    return false;
+}
