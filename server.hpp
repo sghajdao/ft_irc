@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:46:54 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/05 15:57:23 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/07 16:54:11 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # include <sys/errno.h>
 # include <stdbool.h>
 # include <vector>
+#include <netdb.h>
 
 using namespace std;
 
