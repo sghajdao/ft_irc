@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/06 01:11:05 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/08 03:27:34 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,10 +89,10 @@ int Channel::deleteUser(int clientFd) {
 
     it = _userList.find(clientFd);
     if (it == _userList.end()) return _userList.size();
-    
-    // clientSource = it->second->getSource();
-    // delete it->second; TODO
-    _userList.erase(clientFd);
+    {
+        // clientSource = it->second->getSource();
+        _userList.erase(it);
+    }
 
     if (_userList.empty()) return 0;
     return _userList.size();
@@ -111,7 +111,9 @@ void Channel::deleteOperator(int clientFd) {
 
     it = _operators.find(clientFd);
     if (it != _operators.end())
+    {
         _operators.erase(it);
+    }
 }
 
 User* Channel::findUserByFd(const int clientFd) {
@@ -322,4 +324,13 @@ string Channel::getPassword(void)
 void Channel::deletePassword()
 {
     _password.clear();
+}
+
+bool Channel::isOperator(User *user){
+    for (map<int, User *>::const_iterator it = _operators.begin(); it != _operators.end(); ++it){
+        if (user->getIsNick() == (*it).second->getIsNick()){
+            return true;
+        }
+    }
+    return false;
 }

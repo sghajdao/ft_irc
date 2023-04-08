@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/06 01:11:03 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/07 22:06:53 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ class Channel {
         void broadcast(Server *server, int ignoreF) const;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
+        bool isOperator(User *user);
         int checkInvit(std::string nick)
         {
             for (size_t i = 0; i < _invite.size(); i++)

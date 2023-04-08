@@ -35,6 +35,5 @@ int main(int argc, char **argv)
         e.what();
         ircServer.shutDown("Error while running server");
     }
-    
     return 0;
 }
