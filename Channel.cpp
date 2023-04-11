@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/08 03:27:34 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 16:41:44 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,14 @@ const string& Channel::getName(void) const {
     return _name;
 }
 
-void Channel::broadcast(Server *server, int ignoreFd) const {
+void Channel::broadcast(User *user ,Server *server, int ignoreFd) const {
     map<int, User *>::const_iterator it;
-    const string msg = server->createReplyForm();
+    const string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
         if (it->first == ignoreFd) continue;
 
-        it->second->addToReplyBuffer(server->createReplyForm());
+        it->second->addToReplyBuffer(server->createReplyForm(user));
     }
 }
 
@@ -60,10 +60,13 @@ const vector<string> Channel::getUserList(void) const {
     return userList;
 }
 
-// void    setUserList(const string nickname)
-// {
-//     //  _userList.insert();
-// }
+void    Channel::setOperator()
+{
+    std::map<int, User *>::iterator it;
+    it = _operators.begin();
+    for (; it != _operators.end(); it++)
+        it->second->setNickname("@" + it->second->getNickname());   
+}
 
 void Channel::addUser(int clientFd, User *user) {
     _userList.insert(make_pair(clientFd, user));
@@ -124,10 +127,16 @@ User* Channel::findUserByFd(const int clientFd) {
     return it->second;
 }
 
-User* Channel::findFirstUser() {
+User* Channel::findFirstUserbyNick(string nick) {
     map<int, User *>::iterator it;
 
     it = _userList.begin();
+    for (; it != _userList.end(); it++)
+    {
+        if (it->second->getNickname() == nick)
+            return (it->second);
+    }
+    
     if (it == _userList.end()) return NULL;
     return it->second;
 }
@@ -142,23 +151,12 @@ User* Channel::findSecondUser(string nick) {
     return (NULL);
 }
 
-bool Channel::findUserIfExistByFd(const int clientFd) {
-    map<int, User *>::iterator it;
-
-    it = _userList.find(clientFd);
-    if (it != _userList.end())
-        return (true);
-    return (false);
-    // if (it == _userList.end()) return NULL;
-    // return it->second;
-}
-
 bool Channel::findOperatorIfExistByNick(string nick) {
     map<int, User *>::iterator it;
     it = _operators.begin();
     for (; it != _operators.end(); it++)
     {
-        if (it->second->getNickname() == "@" + nick)
+        if (it->second->getNickname() == nick)
             return (true);
     }
     return (false);
@@ -202,6 +200,17 @@ bool Channel::findOperatorIfExist(const int clientFd) {
 
     it = _operators.find(clientFd);
     if (it != _operators.end())
+        return (true);
+    return (false);
+    // if (it == _userList.end()) return NULL;
+    // return it->second;
+}
+
+bool Channel::findUserIfExistByFd(const int clientFd) {
+    map<int, User *>::iterator it;
+
+    it = _userList.find(clientFd);
+    if (it != _userList.end())
         return (true);
     return (false);
     // if (it == _userList.end()) return NULL;

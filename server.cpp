@@ -6,9 +6,10 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/08 02:08:55 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 16:58:48 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "messagerror.hpp"
 #include "server.hpp"
@@ -68,7 +69,12 @@ void Server::createNewClientSocket(void) {
 		return ;
 	}
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-	inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
+	if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
+		cout << "Error while getting hostname on new client..." << endl;
+		return ;
+	}
+	cout << hostStr << endl;
+	// inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
 	cout << "accept new client: " << clientSocket << " / Host : " << hostStr << endl;
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
 
@@ -181,8 +187,8 @@ void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent&
 {
 	if (tab.size() < 4)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
-	else if(tab.size() > 4)
-	 	sendMessage_error(user->getNickname(), event, ERROR, 404);
+	// else if(tab.size() > 4)
+	//  	sendMessage_error(user->getNickname(), event, ERROR, 404);
 	else
 	{
 		// if (checkUserExist(tab, user, event))
@@ -244,15 +250,15 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdInvite(user, event, _params);
 	else if (_command.compare("MODE") == 0 || _command.compare("mode") == 0)
 		cmdMode(user, event, _params);
-	// else if (_command.compare("NOTICE") == 0 || _command.compare("notice") == 0)
-	// 	cmdNotice(user, event);
-	// else if (_command.compare("KICK") == 0 || _command.compare("kick") == 0)
-	// 	cmdKick(user, event);
+	else if (_command.compare("NOTICE") == 0 || _command.compare("notice") == 0)
+		cmdNotice(user, event);
+	else if (_command.compare("KICK") == 0 || _command.compare("kick") == 0)
+		cmdKick(user, event);
 	else if (_command.compare("TOPIC") == 0 || _command.compare("topic") == 0)
 		cmdTopic(user, event, _params);
 	else if (_command.compare("QUIT") == 0 || _command.compare("quit") == 0)
 		cmdQuit(user, event, _params);
-	else if (_command.compare("/JOKE") == 0 || _command.compare("/joke"))
+	else if (_command.compare("JOKE") == 0 || _command.compare("joke") == 0)
 		boot(event);
 	else
 		sendMessage_error(_command, event, " :Command not found", 912);
@@ -265,25 +271,23 @@ void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& e
 	int	   sendBytes;
 	sendBytes = send(event.ident, buffer.c_str(), buffer.size(), 0);
 	if (sendBytes <= 0) {
-		if (sendBytes == -1 && errno == EAGAIN) {
-			errno = 0;
-			return;
-		}
 		cerr << "client send error!" << endl;
 		_allUser.erase(event.ident);
 		cout << "client disconnected: " << event.ident << '\n';
+		return;
 	}
 }
 
 void	Server::authentication(std::vector<string> tab, User* user, const struct kevent& event)
 {
 	(void)tab;
-	time_t now = time(0);
-	char *date_time = ctime(&now);
-	string __hostname = user->ft_hostname();
-	std::string buffer = ":" + __hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
-    buffer += ":" + __hostname + " 002 " +  user->getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
-    buffer += ":" + __hostname + " 003 " +  user->getNickname() + " :This server has been started " + date_time + "\r\n";
+	// time_t now = time(0);
+	// char *date_time = ctime(&now);
+	string hostname = user->getHost();
+	std::string buffer = ":" + hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
+    buffer += ":" + hostname + " 002 " +  user->getNickname() + " :Your host is " + hostname + ", running version leet-irc 1.0.0\r\n";
+    buffer += ":" + hostname + " 003 " +  user->getNickname() + " " + hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+    buffer += ":" + hostname + " 004 " +  user->getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
 	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
@@ -298,11 +302,8 @@ void Server::sendDataToClient(const struct kevent& event) {
 
 	sendBytes = send(event.ident, targetUser->getReplyBuffer().c_str(), targetUser->getReplyBuffer().length(), 0);
 	if (sendBytes == -1) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			errno = 0;
-			return ;
-		}
 		cerr << "client send error!" << endl; 
+		return ;
 	} else {
 
 		targetUser->setReplyBuffer(targetUser->getReplyBuffer().substr(sendBytes));

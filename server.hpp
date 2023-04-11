@@ -6,9 +6,10 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:46:54 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/06 01:10:35 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 16:40:51 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
@@ -28,6 +29,7 @@
 # include <sys/errno.h>
 # include <stdbool.h>
 # include <vector>
+#include <netdb.h>
 
 using namespace std;
 
@@ -80,7 +82,7 @@ class Server {
         void deleteChannel(const string& name);
         void cmdInvite(User *user, const struct kevent event, vector<string> invite);
         void sendMessage_error(string nickname, const struct kevent& event, std::string msg, int code);
-        const string createReplyForm(void) const;
+        const string createReplyForm(User *user) const;
         void cmdPrivmsg(User *user, const struct kevent& event);
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);

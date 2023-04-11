@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:27 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/06 01:10:07 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 16:43:58 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@
 #define ERR_PASSWDMISMATCH " :Password incorrect"
 #define ERR_REGISTEREDCHANNEL " :You are reregister in the channel "
 #define ERR_BADCHANMASK " Bad Channel Mask :"
+#define ERR_NOTCHNLOPER ":You're not channel operator"
 
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/07 22:06:53 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 16:42:11 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ class Channel {
         bool findOperatorIfExist(const int clientFd);
         bool findOperatorIfExistByNick(std::string nick);
         User* findUserByNick(const std::string& nickname);
-        void broadcast(Server *server, int ignoreF) const;
+        void broadcast(User *user ,Server *server, int ignoreFd) const ;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);
@@ -106,6 +106,8 @@ class Channel {
               _invite.erase(it);
           }
         };
+        User* findFirstUserbyNick(string nick);
+        void setOperator();
 };
 
 #endif
