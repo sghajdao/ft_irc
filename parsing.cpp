@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/11 16:50:07 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 17:16:29 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ const string Server::createReplyForm(User *user) const {
 		msg.append(*it + " ");
 	}
 	msg.append("\r\n");
-	string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " NOTICE " + user->getNickname() + ((_params.size() > 2 && msg.find(":") != 2) ? " :" : " ");
+	string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + " NOTICE " + user->getNickname() + ((_params.size() > 2 && msg.find(":") != 2) ? " :" : " ");
 	prefix.append(msg);
 	return prefix;
 }
@@ -166,7 +166,9 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 			}
 			msg.append("\r\n");
 			if (msg[0] == ':') {msg.erase(msg.begin());}
-			string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
+			// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " PART : " + channel_leave[i] + "\n");
+			string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!~" + user->getNickname()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
+			// string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!~" + user->getNickname()) + (user->ft_hostname().empty() ? "" : "@10.12.3.6") + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
 			targetUser->addToReplyBuffer(prefix + msg);
     }
 }
@@ -234,7 +236,14 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 							{
 								it->second->addUser(event.ident, user);
 								user->addChannelUser(name_channel[i]);
-								sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+								// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+								it->second->broadcast(user, this, -1, 1);
+								vector<string> vect;
+								string str;
+								vect = it->second->getAllUser();
+								for (size_t i = 0; i != vect.size(); i++)
+									str += " " + vect[i];
+								user->addToReplyBuffer(str + "\n");
 							}
 							else
 								sendMessage_error(key_channel[i], event, ERR_PASSWDMISMATCH, 464);
@@ -248,7 +257,14 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 						{
 							it->second->addUser(event.ident, user);
 							user->addChannelUser(name_channel[i]);
-							sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+							// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+							it->second->broadcast(user, this, -1, 1);
+							vector<string> vect;
+							string str;
+							vect = it->second->getAllUser();
+							for (size_t i = 0; i != vect.size(); i++)
+								str += " " + vect[i];
+							user->addToReplyBuffer(str + "\n");
 						}
 						else
 							sendMessage_error(key_channel[i], event, ERR_PASSWDMISMATCH, 464);
@@ -266,7 +282,14 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 					{
 						it->second->addUser(event.ident, user);
 						user->addChannelUser(name_channel[i]);
-						sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+						// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+						it->second->broadcast(user, this, -1, 1);
+						vector<string> vect;
+						string str;
+						vect = it->second->getAllUser();
+						for (size_t i = 0; i != vect.size(); i++)
+							str += " " + vect[i];
+						user->addToReplyBuffer(str + "\n");
 					}
 					else
 						return(sendMessage_error(user->getNickname(), event, " :User not invited", 475));
@@ -275,7 +298,14 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				{
 					it->second->addUser(event.ident, user);
 					user->addChannelUser(name_channel[i]);
-					sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+					// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+					it->second->broadcast(user, this, -1, 1);
+					vector<string> vect;
+					string str;
+					vect = it->second->getAllUser();
+					for (size_t i = 0; i != vect.size(); i++)
+						str += " " + vect[i];
+					user->addToReplyBuffer(str + "\n");
 				}
 
 			}
@@ -285,7 +315,6 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 			if (x == 0)
 			{
 				Channel *channel;
-				// User 	*tmp;
 
 				channel = new Channel(name_channel[i].c_str());
 				channel->addUser(event.ident, user);
@@ -296,7 +325,16 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				channel->setFindPass(false);
 				channel->setInvit(false);
 				_allChannel.insert(make_pair(name_channel[i], channel));
-				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+				// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+				channel->broadcast(user, this, -1, 1);
+				vector<string> vect;
+				string str;
+				vect = channel->getAllUser();
+				for (size_t i = 0; i != vect.size(); i++)
+					str += " " + vect[i];
+				user->addToReplyBuffer(str + "\n");
+
+				// userList and operator
 			}
 			else
 			{
@@ -310,7 +348,14 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				channel->setFindPass(true);
 				channel->setInvit(false);
 				_allChannel.insert(make_pair(name_channel[i], channel));
-				sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+				// sendMessage(event, ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN : " + name_channel[i] + "\n");
+				channel->broadcast(user, this, -1, 1);
+				vector<string> vect;
+				string str;
+				vect = channel->getAllUser();
+				for (size_t i = 0; i != vect.size(); i++)
+					str += " " + vect[i];
+				user->addToReplyBuffer(str + "\n");
 				x = x - 1;
 			}
 		}
@@ -322,7 +367,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 	{
 		cout << "channel: " << it->first << " pass is: " << it->second->getFindPass() << endl;
 		it->second->getAllUser();
-		it->second->getOperator();
+		// it->second->getOperator();
 		it->second->getInvite();
 	}
 	cout << "--------end----------\n";
@@ -394,7 +439,7 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 	{
 		cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 		it1->second->getAllUser();
-		it1->second->getOperator();
+		// it1->second->getOperator();
 		it1->second->getInvite();
 	}
 	cout << "--------end----------\n";
@@ -507,7 +552,7 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 	{
 		cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 		it1->second->getAllUser();
-		it1->second->getOperator();
+		// it1->second->getOperator();
 		it1->second->getInvite();
 	}
 	cout << "--------end----------\n";
@@ -638,7 +683,7 @@ void Server::cmdQuit(User *user, const struct kevent& event, vector<string> tab)
 	// {
 	// 	cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 	// 	it1->second->getAllUser();
-	// 	it1->second->getOperator();
+	// it1->second->getOperator();
 	// }
 	// cout << "--------end----------\n";
 }

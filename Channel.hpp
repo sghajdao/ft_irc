@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/11 16:42:11 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 00:53:56 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,9 @@ class Channel {
         const std::string& getName(void) const;
         const std::vector<std::string> getUserList(void) const;
         void setUserList(const User *user);
-        void getAllUser(void);
+        vector<string>  getAllUser();
         const std::string    getUser(int fd);
-        void    getOperator(void);
+        // void    getOperator(void);
         void    getInvite(void);
         std::map<int, User *>    addSecondOperators(void);
         std::string getSecondOperator(void);
@@ -82,7 +82,7 @@ class Channel {
         bool findOperatorIfExist(const int clientFd);
         bool findOperatorIfExistByNick(std::string nick);
         User* findUserByNick(const std::string& nickname);
-        void broadcast(User *user ,Server *server, int ignoreFd) const ;
+        void broadcast(User *user ,Server *server, int ignoreFd, int flag) const;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);

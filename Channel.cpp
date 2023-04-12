@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/11 16:41:44 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 17:15:33 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,20 @@ const string& Channel::getName(void) const {
     return _name;
 }
 
-void Channel::broadcast(User *user ,Server *server, int ignoreFd) const {
+void Channel::broadcast(User *user ,Server *server, int ignoreFd, int flag) const {
     map<int, User *>::const_iterator it;
     const string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
         if (it->first == ignoreFd) continue;
-
-        it->second->addToReplyBuffer(server->createReplyForm(user));
+        if (flag == 0)
+            it->second->addToReplyBuffer(server->createReplyForm(user));
+        else
+            it->second->addToReplyBuffer(":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->getHost()+ " JOIN :" + user->getChannelList().back() + "\n");
+        // {
+        //     string msg = ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN :" + user->getChannelList().back() + "\n";
+        //     send(it->second->getFd(), msg.c_str(), msg.size(), 0);
+        // }
     }
 }
 
@@ -228,12 +234,19 @@ User* Channel::findUserByNick(const string& nickname) {
     return NULL;
 }
 
-void    Channel::getAllUser(void)
+vector<string>   Channel::getAllUser()
 {
+    vector<string> vect;
     map<int, User *>::iterator it;
     it = _userList.begin();
     for (; it != _userList.end(); it++)
-        cout << "Users: " << it->second->getNickname() << endl;
+    {
+        if (isOperator(it->second))
+            vect.push_back("@" + it->second->getNickname());
+        else
+            vect.push_back(it->second->getNickname());
+    }
+    return (vect);
 }
 
 const string    Channel::getUser(int fd)
@@ -243,13 +256,15 @@ const string    Channel::getUser(int fd)
     return(it->second->getNickname());
 }
 
-void    Channel::getOperator(void)
-{
-    map<int, User *>::iterator it;
-    it = _operators.begin();
-    for (; it != _operators.end(); it++)
-        cout << "Operators: " << it->second->getNickname() << endl;
-}
+// vector<string>    Channel::getOperator(void)
+// {
+//     vector<string> vect;
+//     map<int, User *>::iterator it;
+//     it = _operators.begin();
+//     for (; it != _operators.end(); it++)
+//         vect.push_back(it->second->getNickname());
+//     return (vect);
+// }
 
 void    Channel::getInvite(void)
 {
@@ -337,7 +352,7 @@ void Channel::deletePassword()
 
 bool Channel::isOperator(User *user){
     for (map<int, User *>::const_iterator it = _operators.begin(); it != _operators.end(); ++it){
-        if (user->getIsNick() == (*it).second->getIsNick()){
+        if (user->getNickname() == (*it).second->getNickname()){
             return true;
         }
     }

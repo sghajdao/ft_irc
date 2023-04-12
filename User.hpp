@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:38 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/06 01:10:39 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 22:14:17 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,10 @@ class User {
 		void addToReplyBuffer(const string& src);
 		string ft_hostname();
 		vector<string> getUser();
+		vector<string> getChannelList()
+		{
+			return (_channelOfUser);
+		}
 
 };
 

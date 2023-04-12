@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:59 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/11 16:43:30 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/11 21:54:40 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void Server::cmdNotice(User *user, const struct kevent& event) {
 			sendMessage_error(user->getNickname(), event, ERR_NOSUCHCHNL, 401);
 			continue;
 		}
-		targetChannel->broadcast(user , this, -1);
+		targetChannel->broadcast(user , this, -1, 0);
     }
 }
 
@@ -153,7 +153,7 @@ void Server::cmdInvite(User *user, const struct kevent event, vector<string> inv
 	{
 		cout << "channel: " << it1->first << " pass is :" << it1->second->getFindPass() << endl;
 		it1->second->getAllUser();
-		it1->second->getOperator();
+		// it1->second->getOperator();
 		it1->second->getInvite();
 	}
 	cout << "--------end----------\n";

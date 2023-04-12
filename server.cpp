@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/11 16:58:48 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 17:25:31 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,12 +69,12 @@ void Server::createNewClientSocket(void) {
 		return ;
 	}
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-	if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
-		cout << "Error while getting hostname on new client..." << endl;
-		return ;
-	}
+	// if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
+	// 	cout << "Error while getting hostname on new client..." << endl;
+	// 	return ;
+	// }
 	cout << hostStr << endl;
-	// inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
 	cout << "accept new client: " << clientSocket << " / Host : " << hostStr << endl;
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
 
@@ -224,6 +224,7 @@ void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent&
 
 void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
+	// int x = 0;
 	if (!user->getRegistred())
 	{
 		if ((_command != "PASS" && _command != "pass") && (_command != "USER" && _command != "user") && (_command != "NICK" && _command != "nick"))
@@ -283,11 +284,17 @@ void	Server::authentication(std::vector<string> tab, User* user, const struct ke
 	(void)tab;
 	// time_t now = time(0);
 	// char *date_time = ctime(&now);
-	string hostname = user->getHost();
-	std::string buffer = ":" + hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + "127.0.0.1\r\n";
+	string hostname = user->ft_hostname();
+	std::string buffer = ":" + hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + hostname +"\r\n";
     buffer += ":" + hostname + " 002 " +  user->getNickname() + " :Your host is " + hostname + ", running version leet-irc 1.0.0\r\n";
     buffer += ":" + hostname + " 003 " +  user->getNickname() + " " + hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
     buffer += ":" + hostname + " 004 " +  user->getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         ┬ ┬┌─┐┬  ┌─┐┌─┐┌┬┐┌─┐  ┌┬┐┌─┐  ┬┬─┐┌─┐  ┌─┐┌─┐┬─┐┬  ┬┌─┐┬─┐\r\n";
+	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         │││├┤ │  │  │ ││││├┤    │ │ │  │├┬┘│    └─┐├┤ ├┬┘└┐┌┘├┤ ├┬┘\r\n";
+	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         └┴┘└─┘┴─┘└─┘└─┘┴ ┴└─┘   ┴ └─┘  ┴┴└─└─┘  └─┘└─┘┴└─ └┘ └─┘┴└─\r\n";
+	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :                        Please enjoy your stay!\r\n";
+	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :you can use bot command (BOT) to get quote of the day!\r\n";
+	buffer += ":" + hostname + " 376 " + user->getNickname() +  " :Made by lalalalala\r\n";
 	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
@@ -295,20 +302,22 @@ void	Server::authentication(std::vector<string> tab, User* user, const struct ke
 void Server::sendDataToClient(const struct kevent& event) {
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
-	int sendBytes;
+	// int sendBytes;
 
 	if (it == _allUser.end()) return ;
 	if (targetUser->getReplyBuffer().empty()) return;
 
-	sendBytes = send(event.ident, targetUser->getReplyBuffer().c_str(), targetUser->getReplyBuffer().length(), 0);
-	if (sendBytes == -1) {
-		cerr << "client send error!" << endl; 
-		return ;
-	} else {
-
-		targetUser->setReplyBuffer(targetUser->getReplyBuffer().substr(sendBytes));
-		if (targetUser->getIsQuiting() && targetUser->getReplyBuffer().empty()) _allUser.erase(event.ident);
-	}
+	// sendBytes = send(event.ident, targetUser->getReplyBuffer().c_str(), targetUser->getReplyBuffer().length(), 0);
+	// if (sendBytes == -1) {
+	// 	cerr << "client send error!" << endl; 
+	// 	return ;
+	// } else {
+	// 	targetUser->setReplyBuffer(targetUser->getReplyBuffer().substr(sendBytes));
+	// 	cout << targetUser->getReplyBuffer() << endl;
+	// 	if (targetUser->getIsQuiting() && targetUser->getReplyBuffer().empty()) _allUser.erase(event.ident);
+	// }
+	sendMessage(event, targetUser->getReplyBuffer());
+	targetUser->setReplyBuffer("");
 }
 
 void Server::handleEvent(const struct kevent& event) {

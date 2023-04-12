@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:27 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/06 01:10:28 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 17:00:36 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,12 +222,15 @@ bool User::SearchChannelUser(string channel){
 
 string User::ft_hostname()
 {
-	char __hostname[50];
+    char hostname[50];
 
-	if (gethostname(__hostname, sizeof(__hostname)) == -1)
-		cout << "Error :hostname\n";
-	return (__hostname);
-	
+    if (gethostname(hostname, sizeof(hostname)) == -1)
+        cout << "Error :hostname\n";
+    struct hostent *host = gethostbyname(hostname);
+    char * szLocalIP;
+    szLocalIP = inet_ntoa (*(struct in_addr*)*host->h_addr_list);
+    return (szLocalIP);
+
 }
 
 vector<string> User::getUser()
