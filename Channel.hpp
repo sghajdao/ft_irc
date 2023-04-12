@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 00:53:56 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 17:50:07 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,9 @@ class Channel {
 		// std::map<int, User *> bans;
 
     public:
-        Channel(void)
-        {
-          
-        };
+        Channel(void);
         Channel(std::string name, std::string password);
-        Channel(const Channel& channel);
+        // Channel(const Channel& channel);
         Channel& operator=(const Channel& channel);
         Channel(const std::string& name);
         ~Channel();
@@ -62,7 +59,7 @@ class Channel {
         std::string getPassword(void);
         const std::string& getName(void) const;
         const std::vector<std::string> getUserList(void) const;
-        void setUserList(const User *user);
+        // void setUserList(const User *user);
         vector<string>  getAllUser();
         const std::string    getUser(int fd);
         // void    getOperator(void);
@@ -76,7 +73,7 @@ class Channel {
         void deleteOperator(int clientFd);
         User* findUserByFd(const int clientFd);
         User* findSecondUser(std::string nick);
-        User* findFirstUser();
+        // User* findFirstUser();
         bool findUserIfExistByFd(const int clientFd);
         bool findUserIfExistByNick(std::string nick);
         bool findOperatorIfExist(const int clientFd);
@@ -86,26 +83,8 @@ class Channel {
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);
-        int checkInvit(std::string nick)
-        {
-            for (size_t i = 0; i < _invite.size(); i++)
-            {
-              if (_invite[i] == nick)
-                return(1);
-            }
-            return (0);
-        };
-        void deleteInvite(std::string nickname)
-        {
-          std::vector<std::string>::iterator it;
-
-          it = _invite.begin();
-          for (; it != _invite.end(); it++)
-          {
-            if (it->find(nickname))
-              _invite.erase(it);
-          }
-        };
+        int checkInvit(std::string nick);
+        void deleteInvite(std::string nickname);
         User* findFirstUserbyNick(string nick);
         void setOperator();
 };

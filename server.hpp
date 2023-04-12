@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:46:54 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/11 16:40:51 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 22:17:11 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,11 @@
 # include <arpa/inet.h>
 # include <unistd.h>
 # include <fcntl.h>
-# include <sys/errno.h>
 # include <stdbool.h>
 # include <vector>
 #include <netdb.h>
+#include <sstream>
+
 
 using namespace std;
 
@@ -53,7 +54,6 @@ class Server {
         Server(const Server& server);
         const vector<string>& getParams(void) const;
         const string& getCommand(void) const;
-        Server& operator=(const Server& server);
         void updateEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
         std::string getpassword();
         void createNewClientSocket(void);
@@ -87,11 +87,10 @@ class Server {
         void cmdJoin(User *user, const struct kevent& event, vector<string> channel);
         void cmdPart(User *user, const struct kevent& event, std::vector<string> tab);
         void cmdMode(User *user, const struct kevent& event, vector<string> tab);
-        void cmdKick(User *user, const struct kevent& event, vector<string> tab);
         void cmdTopic(User *user, const struct kevent& event, vector<string> tab);
         void cmdQuit(User *user, const struct kevent& event, vector<string> tab);
         void cmdNotice(User *user, const struct kevent& event);
-        void creatChannel(string name_channel, User *user, const struct kevent& event, string key_channel);void cmdKick(User *user, const struct kevent& event);
+        void cmdKick(User *user, const struct kevent& event);
         bool getUesrNickname(string nickname);
         void boot(const struct kevent& event);
         void sendMessage_bot(string nickname, const struct kevent& event);

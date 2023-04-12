@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:38 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/11 22:14:17 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 21:12:20 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,7 @@ class User {
 		vector<string> _channelOfOperatore;
 
 	public:
-		User(void){
-
-		};
+		User(void);
 		User(const User& user);
 		User& operator=(const User& user);
         User(int fd, const string& host);
@@ -89,10 +87,7 @@ class User {
 		void addToReplyBuffer(const string& src);
 		string ft_hostname();
 		vector<string> getUser();
-		vector<string> getChannelList()
-		{
-			return (_channelOfUser);
-		}
+		vector<string> getChannelList();
 
 };
 

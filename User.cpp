@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   User.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:27 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 17:00:36 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 21:12:05 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include "User.hpp"
 #include "server.hpp"
+
 
 User::User(int fd, const string& host) : _sd(fd), _host(host), _isQuiting(false) {
 
@@ -21,6 +22,8 @@ User::User(int fd, const string& host) : _sd(fd), _host(host), _isQuiting(false)
 User::~User() {
     close(_sd);
 }
+
+User::User(void){}
 
 int User::getFd(void) const {
     return _sd;
@@ -234,6 +237,11 @@ string User::ft_hostname()
 }
 
 vector<string> User::getUser()
+{
+    return (_channelOfUser);
+
+}
+vector<string> User::getChannelList()
 {
     return (_channelOfUser);
 }

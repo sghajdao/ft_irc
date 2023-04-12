@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/12 17:25:31 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/12 22:30:53 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,7 @@ void Server::createNewClientSocket(void) {
 	memset(hostStr, 0, sizeof(hostStr));
 	memset(&clientAddr, 0, sizeof(clientAddr));
 	if ((clientSocket = accept(_sd, (struct sockaddr *)&clientAddr, &addrLen)) == -1) {
-		cerr << "aceept() failed! Check errno : " << errno << endl;
-		errno = 0;
+		cerr << "aceept() failed! Check error : "<< endl;
 		return ;
 	}
 	if (_allUser.size() >= 30) {
@@ -103,6 +102,7 @@ void Server::run() {
 
 void Server::recvClientData(const struct kevent& event) {
 	char buf[501];
+	string str;
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 	int recvBytes;
@@ -110,16 +110,16 @@ void Server::recvClientData(const struct kevent& event) {
 	if (it == _allUser.end()) return ;
 	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
-		if (recvBytes == -1 && errno == EAGAIN) {
-			errno = 0;
-			return;
-		}
 		cerr << "client recv error!" << endl;
 		_allUser.erase(event.ident);
 		cout << "client disconnected: " << event.ident << '\n';
+		return;
 	} else {
 		buf[recvBytes] = '\0';
 		targetUser->addToCmdBuffer(buf);
+		str = buf;
+		if (str[5] == ':') {str.erase(str.begin() + 5);}
+		// cout << str << endl;
 		handleCmd(targetUser, event);
 	}
 	targetUser->clearCmdBuffer();
@@ -143,13 +143,10 @@ void	Server::sendMessage(const struct kevent& event, std::string msg)
 	int sendBytes;
 	sendBytes = send(event.ident, msg.c_str(), msg.size(), 0);
 	if (sendBytes <= 0) {
-		if (sendBytes == -1 && errno == EAGAIN) {
-			errno = 0;
-			return;
-		}
 		cerr << "client send error!" << endl;
 		_allUser.erase(event.ident);
 		cout << "client disconnected: " << event.ident << '\n';
+		return;
 	}
 }
 
@@ -187,20 +184,13 @@ void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent&
 {
 	if (tab.size() < 4)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
-	// else if(tab.size() > 4)
-	//  	sendMessage_error(user->getNickname(), event, ERROR, 404);
 	else
 	{
-		// if (checkUserExist(tab, user, event))
-		// 	sendMessage_error(user->getNickname(), event, ERR_ALREADYREGISTERED, 464);
-		// else
-		// {
 	 		user->setUsername(tab[0]);
 	 		user->setHostname(tab[1]);
 	 		user->setServername(tab[2]);
 	 		user->setRealname(tab[3]);
 			user->setIsUser();
-		// }
 	}
 }
 
@@ -209,11 +199,11 @@ void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent&
 	if (tab.size() < 1)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
 	else if(tab.size() > 1)
-	 	sendMessage_error(user->getNickname(), event, ERROR, 404);
+	 	sendMessage_error(user->getNickname(), event, ERROR, 912);
 	else
 	{
 		if (checkNickExist(tab, user, event))
-			sendMessage_error(user->getNickname(), event, ERR_ALREADYREGISTERED, 464);
+			sendMessage_error(user->getNickname(), event, ERR_NICKNAMEINUSE, 433);
 		else
 		{
 	 		user->setNickname(tab[0]);
@@ -224,7 +214,6 @@ void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent&
 
 void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
-	// int x = 0;
 	if (!user->getRegistred())
 	{
 		if ((_command != "PASS" && _command != "pass") && (_command != "USER" && _command != "user") && (_command != "NICK" && _command != "nick"))
@@ -282,19 +271,11 @@ void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& e
 void	Server::authentication(std::vector<string> tab, User* user, const struct kevent& event)
 {
 	(void)tab;
-	// time_t now = time(0);
-	// char *date_time = ctime(&now);
 	string hostname = user->ft_hostname();
 	std::string buffer = ":" + hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + hostname +"\r\n";
     buffer += ":" + hostname + " 002 " +  user->getNickname() + " :Your host is " + hostname + ", running version leet-irc 1.0.0\r\n";
     buffer += ":" + hostname + " 003 " +  user->getNickname() + " " + hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
     buffer += ":" + hostname + " 004 " +  user->getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
-	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         ┬ ┬┌─┐┬  ┌─┐┌─┐┌┬┐┌─┐  ┌┬┐┌─┐  ┬┬─┐┌─┐  ┌─┐┌─┐┬─┐┬  ┬┌─┐┬─┐\r\n";
-	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         │││├┤ │  │  │ ││││├┤    │ │ │  │├┬┘│    └─┐├┤ ├┬┘└┐┌┘├┤ ├┬┘\r\n";
-	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :         └┴┘└─┘┴─┘└─┘└─┘┴ ┴└─┘   ┴ └─┘  ┴┴└─└─┘  └─┘└─┘┴└─ └┘ └─┘┴└─\r\n";
-	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :                        Please enjoy your stay!\r\n";
-	buffer += ":" + hostname + " 372 " + user->getNickname() +  " :you can use bot command (BOT) to get quote of the day!\r\n";
-	buffer += ":" + hostname + " 376 " + user->getNickname() +  " :Made by lalalalala\r\n";
 	sendMessageWelcom(buffer, user, event);
 	user->setRegistred();
 }
@@ -325,7 +306,6 @@ void Server::handleEvent(const struct kevent& event) {
 		if (event.ident == (const uintptr_t)_sd)
 			throw(runtime_error("server socket error"));
 		else {
-			// User *targetUser = _allUser[event.ident];
 			cerr << "client socket error" << endl;
 		}
 	} else if (event.filter == EVFILT_READ) {
