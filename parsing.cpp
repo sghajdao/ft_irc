@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 22:50:41 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 16:40:43 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,15 +438,17 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 	string str;
 	User *tmp;
 
-	if (tab.size() == 0 || tab.size() > 3)
+	if (tab.size() < 2)
+		return;
+	cout << tab.size() << endl;
+	if (tab.empty() || tab.size() > 3)
 		return(sendMessage_error(user->getNickname(), event, " :More parameters", 461));
 	it = _allChannel.find(tab[0]);
+	cout << tab[0] << endl;
 	if (it != _allChannel.end())
 	{
 		if (tab[1] == "+k")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 1)
 			{
 				it->second->editPassword(tab[2]);
@@ -474,8 +476,6 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		}
 		else if(tab[1] == "+o")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
 				if (it->second->findOperatorIfExistByNick(tab[2]))
@@ -493,8 +493,6 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		}
 		else if(tab[1] == "-o")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
 				if (it->second->_operators.size() == 1 && it->second->_userList.size() == 1)
@@ -617,28 +615,24 @@ void Server::cmdQuit(User *user, const struct kevent& event, vector<string> tab)
 				it->second->deleteUser(user->getFd());
 				it->second->deleteOperator(user->getFd());
 			}
-			if (it->second->findOperatorIfExist(user->getFd()))
+			if (it->second->_userList.size() != 0 && !it->second->findOperatorIfExist(user->getFd()))
 			{
-				it->second->deleteOperator(user->getFd());
-				if (it->second->_userList.size() != 0 && !it->second->findOperatorIfExist(user->getFd()))
-				{
-					tmp = it->second->findSecondUser(user->getNickname());
-					it->second->addOperators(tmp->getFd(), tmp);
-				}
-				if (it->second->_userList.empty() && it->second->_operators.empty())
-				{
-					// delete it->second;
-					_allChannel.erase(channel[i]);
-				}
+				tmp = it->second->findSecondUser(user->getNickname());
+				it->second->addOperators(tmp->getFd(), tmp);
+			}
+			if (it->second->_userList.empty() && it->second->_operators.empty())
+			{
+				delete it->second;
+				_allChannel.erase(channel[i]);
 			}
 		}
 	}
-	map<int, User *>::iterator it1;
+	map<int, User *>::const_iterator it1;
 	it1 = _allUser.find(user->getFd());
 	if (it1 != _allUser.end())
 	{
-		// delete it1->second;
+		delete it1->second;
 		_allUser.erase(it1);
 	}
-	close(user->getFd());
+	// close(user->getFd());
 }

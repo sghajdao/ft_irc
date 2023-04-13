@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/12 22:30:53 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 16:55:31 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ void Server::run() {
 void Server::recvClientData(const struct kevent& event) {
 	char buf[501];
 	string str;
+	vector<string> tab;
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 	int recvBytes;
@@ -111,7 +112,9 @@ void Server::recvClientData(const struct kevent& event) {
 	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
 		cerr << "client recv error!" << endl;
+		cmdQuit(targetUser, event, tab);
 		_allUser.erase(event.ident);
+		close(event.ident);
 		cout << "client disconnected: " << event.ident << '\n';
 		return;
 	} else {
@@ -236,10 +239,10 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0 || _command.compare("part") == 0)
 		cmdPart(user, event, _params);
-	else if (_command.compare("INVITE") == 0 || _command.compare("invite") == 0)
-		cmdInvite(user, event, _params);
 	else if (_command.compare("MODE") == 0 || _command.compare("mode") == 0)
 		cmdMode(user, event, _params);
+	else if (_command.compare("INVITE") == 0 || _command.compare("invite") == 0)
+		cmdInvite(user, event, _params);
 	else if (_command.compare("NOTICE") == 0 || _command.compare("notice") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0 || _command.compare("kick") == 0)
@@ -250,6 +253,10 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdQuit(user, event, _params);
 	else if (_command.compare("JOKE") == 0 || _command.compare("joke") == 0)
 		boot(event);
+	else if (_command.compare("PONG") == 0 || _command.compare("pong") == 0)
+		return ;
+	else if (_command.compare("PING") == 0 || _command.compare("ping") == 0)
+		return ;
 	else
 		sendMessage_error(_command, event, " :Command not found", 912);
 	user->clearCmdBuffer();

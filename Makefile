@@ -2,7 +2,7 @@ NAME_P = ircserv
 
 CC = c++
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98
+CFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address 
 
 INC = server.hpp User.hpp Channel.hpp messagerror.hpp
 
