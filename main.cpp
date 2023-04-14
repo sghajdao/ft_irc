@@ -14,7 +14,7 @@ int check_error(char *av)
             return (1);
         i++;
     }
-    if (x > 65535 || x == -1)
+    if (x > 65535 || x < 0)
         return (1);
     return (0);
 }
@@ -22,16 +22,16 @@ int check_error(char *av)
 int main(int argc, char **argv)
 {
     if (check_error(argv[1]) || argc != 3) {
-        cerr << "Usage: ./ircserver <port> <password>\n";
+        std::cerr << "Usage: ./ircserver <port> <password>\n";
         exit(EXIT_FAILURE);
     }
     int port = atoi(argv[1]);
     Server ircServer(port, argv[2]);
 
-    std::cout << "Server created" << endl;
+    std::cout << "Server created" << std::endl;
     try {
         ircServer.run();
-    } catch(exception &e) {
+    } catch(std::exception &e) {
         e.what();
         ircServer.shutDown("Error while running server");
     }

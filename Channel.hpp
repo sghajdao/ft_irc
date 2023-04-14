@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/13 21:49:54 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:49:23 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 # include <set>
 # include <vector>
 # include "server.hpp"
-
-using namespace std;
 
 class User;
 
@@ -60,7 +58,7 @@ class Channel {
         const std::string& getName(void) const;
         const std::vector<std::string> getUserList(void) const;
         // void setUserList(const User *user);
-        vector<string>  getAllUser();
+        std::vector<std::string>  getAllUser();
         const std::string    getUser(int fd);
         // void    getOperator(void);
         void    getInvite(void);
@@ -79,13 +77,13 @@ class Channel {
         bool findOperatorIfExist(const int clientFd);
         bool findOperatorIfExistByNick(std::string nick);
         User* findUserByNick(const std::string& nickname);
-        void broadcast(User *user ,Server *server, string option, int flag) const;
+        void broadcast(User *user ,Server *server, std::string option, int flag) const;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);
         int checkInvit(std::string nick);
         void deleteInvite(std::string nickname);
-        User* findFirstUserbyNick(string nick);
+        User* findFirstUserbyNick(std::string nick);
         void setOperator();
 };
 

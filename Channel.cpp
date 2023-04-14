@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:24:12 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:51:56 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "server.hpp"
 
 Channel::Channel(void){}
-Channel::Channel(const string& name){
+Channel::Channel(const std::string& name){
     _name = name;
     _password = "";
     _nametopic = "";
@@ -24,7 +24,7 @@ Channel::Channel(const string& name){
     _invit = 0;
 }
 
-Channel::Channel(string name, string password){
+Channel::Channel(std::string name, std::string password){
     _name = name;
     _password = password;
     _nametopic = "";
@@ -35,13 +35,13 @@ Channel::Channel(string name, string password){
 
 Channel::~Channel() { }
 
-const string& Channel::getName(void) const {
+const std::string& Channel::getName(void) const {
     return _name;
 }
 
-void Channel::broadcast(User *user ,Server *server, string option, int flag) const {
-    map<int, User *>::const_iterator it;
-    const string msg = server->createReplyForm(user);
+void Channel::broadcast(User *user ,Server *server, std::string option, int flag) const {
+    std::map<int, User *>::const_iterator it;
+    const std::string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
         // if (it->first == ignoreFd) continue;
@@ -58,11 +58,11 @@ void Channel::broadcast(User *user ,Server *server, string option, int flag) con
     }
 }
 
-const vector<string> Channel::getUserList(void) const {
-    vector<string> userList;
+const std::vector<std::string> Channel::getUserList(void) const {
+    std::vector<std::string> userList;
 
-    for (map<int, User *>::const_iterator it = _userList.begin(); it != _userList.end(); ++it) {
-        string nickname = "";
+    for (std::map<int, User *>::const_iterator it = _userList.begin(); it != _userList.end(); ++it) {
+        std::string nickname = "";
         nickname += it->second->getNickname();
         userList.push_back(nickname);
     }
@@ -78,15 +78,15 @@ void    Channel::setOperator()
 }
 
 void Channel::addUser(int clientFd, User *user) {
-    _userList.insert(make_pair(clientFd, user));
+    _userList.insert(std::make_pair(clientFd, user));
 }
 
 void Channel::addOperators(int clientFd, User *user) {
-    _operators.insert(make_pair(clientFd, user));
+    _operators.insert(std::make_pair(clientFd, user));
 }
 
 int Channel::deleteUser(int clientFd) {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
 
     it = _userList.find(clientFd);
     if (it == _userList.end()) return _userList.size();
@@ -98,7 +98,7 @@ int Channel::deleteUser(int clientFd) {
 }
 
 void Channel::deleteOperator(int clientFd) {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
 
     it = _operators.find(clientFd);
     if (it != _operators.end())
@@ -108,15 +108,15 @@ void Channel::deleteOperator(int clientFd) {
 }
 
 User* Channel::findUserByFd(const int clientFd) {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
 
     it = _userList.find(clientFd);
     if (it == _userList.end()) return NULL;
     return it->second;
 }
 
-User* Channel::findFirstUserbyNick(string nick) {
-    map<int, User *>::iterator it;
+User* Channel::findFirstUserbyNick(std::string nick) {
+    std::map<int, User *>::iterator it;
 
     it = _userList.begin();
     for (; it != _userList.end(); it++)
@@ -128,8 +128,8 @@ User* Channel::findFirstUserbyNick(string nick) {
     return it->second;
 }
 
-User* Channel::findSecondUser(string nick) {
-    map<int, User *>::iterator it;
+User* Channel::findSecondUser(std::string nick) {
+    std::map<int, User *>::iterator it;
     for (it = _userList.begin() ; it != _userList.end(); it++)
     {
         if (it->second->getNickname() != nick)
@@ -138,8 +138,8 @@ User* Channel::findSecondUser(string nick) {
     return (NULL);
 }
 
-bool Channel::findOperatorIfExistByNick(string nick) {
-    map<int, User *>::iterator it;
+bool Channel::findOperatorIfExistByNick(std::string nick) {
+    std::map<int, User *>::iterator it;
     it = _operators.begin();
     for (; it != _operators.end(); it++)
     {
@@ -149,8 +149,8 @@ bool Channel::findOperatorIfExistByNick(string nick) {
     return (false);
 }
 
-bool Channel::findUserIfExistByNick(string nick) {
-    map<int, User *>::iterator it;
+bool Channel::findUserIfExistByNick(std::string nick) {
+    std::map<int, User *>::iterator it;
     it = _userList.begin();
     for (; it != _userList.end(); it++)
     {
@@ -160,8 +160,8 @@ bool Channel::findUserIfExistByNick(string nick) {
     return (false);
 }
 
-int Channel::getFdOfUser(string nick) {
-    map<int, User *>::iterator it;
+int Channel::getFdOfUser(std::string nick) {
+    std::map<int, User *>::iterator it;
     it = _userList.begin();
     for (; it != _userList.end(); it++)
     {
@@ -171,8 +171,8 @@ int Channel::getFdOfUser(string nick) {
     return (false);
 }
 
-int Channel::getFdOfOperator(string nick) {
-    map<int, User *>::iterator it;
+int Channel::getFdOfOperator(std::string nick) {
+    std::map<int, User *>::iterator it;
     it = _operators.begin();
     for (; it != _operators.end(); it++)
     {
@@ -183,7 +183,7 @@ int Channel::getFdOfOperator(string nick) {
 }
 
 bool Channel::findOperatorIfExist(const int clientFd) {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
 
     it = _operators.find(clientFd);
     if (it != _operators.end())
@@ -192,7 +192,7 @@ bool Channel::findOperatorIfExist(const int clientFd) {
 }
 
 bool Channel::findUserIfExistByFd(const int clientFd) {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
 
     it = _userList.find(clientFd);
     if (it != _userList.end())
@@ -200,8 +200,8 @@ bool Channel::findUserIfExistByFd(const int clientFd) {
     return (false);
 }
 
-User* Channel::findUserByNick(const string& nickname) {
-    map<int, User *>::iterator it;
+User* Channel::findUserByNick(const std::string& nickname) {
+    std::map<int, User *>::iterator it;
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
         User *user = it->second;
@@ -211,10 +211,10 @@ User* Channel::findUserByNick(const string& nickname) {
     return NULL;
 }
 
-vector<string>   Channel::getAllUser()
+std::vector<std::string>   Channel::getAllUser()
 {
-    vector<string> vect;
-    map<int, User *>::iterator it;
+    std::vector<std::string> vect;
+    std::map<int, User *>::iterator it;
     it = _userList.begin();
     for (; it != _userList.end(); it++)
     {
@@ -226,9 +226,9 @@ vector<string>   Channel::getAllUser()
     return (vect);
 }
 
-const string    Channel::getUser(int fd)
+const std::string    Channel::getUser(int fd)
 {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
     it = _userList.find(fd);
     return(it->second->getNickname());
 }
@@ -236,12 +236,12 @@ const string    Channel::getUser(int fd)
 void    Channel::getInvite(void)
 {
     for (size_t i = 0; i < _invite.size(); i++)
-        cout << "Invite: " << _invite[i] << endl;
+        std::cout << "Invite: " << _invite[i] << std::endl;
 }
 
-string    Channel::getSecondOperator(void)
+std::string    Channel::getSecondOperator(void)
 {
-     map<int, User *>::iterator it;
+     std::map<int, User *>::iterator it;
 
     it = _userList.begin();
     return(it->second->getNickname());
@@ -277,12 +277,12 @@ void Channel::setFoundtopic(bool foundtopic)
     _foundtopic = foundtopic;
 }
 
-string Channel::getNametopic()
+std::string Channel::getNametopic()
 {
     return (_nametopic);
 }
 
-void Channel::setNametopic(string nametopic)
+void Channel::setNametopic(std::string nametopic)
 {
     _nametopic = nametopic;
 }
@@ -297,17 +297,17 @@ void Channel::setInvit(bool invit)
     _invit = invit;
 }
 
-string Channel::getPassword() const
+std::string Channel::getPassword() const
 {
     return (_password);
 }
 
-void Channel::editPassword(string passwd)
+void Channel::editPassword(std::string passwd)
 {
     _password = passwd;
 }
 
-string Channel::getPassword(void)
+std::string Channel::getPassword(void)
 {
     return(_password);
 }
@@ -318,7 +318,7 @@ void Channel::deletePassword()
 }
 
 bool Channel::isOperator(User *user){
-    for (map<int, User *>::const_iterator it = _operators.begin(); it != _operators.end(); ++it){
+    for (std::map<int, User *>::const_iterator it = _operators.begin(); it != _operators.end(); ++it){
         if (user->getNickname() == (*it).second->getNickname()){
             return true;
         }

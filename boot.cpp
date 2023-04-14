@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   boot.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/05 15:54:28 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 18:01:04 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:51:21 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ void	Server::sendMessage_bot(std::string nickname, const struct kevent& event)
 	name = name + "\n";
 	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
 	if (sendBytes <= 0) {
-		cerr << "client send error!" << endl;
+		std::cerr << "client send error!" << std::endl;
 		_allUser.erase(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
+		std::cout << "client disconnected: " << event.ident << '\n';
 		return;
 	}
 }

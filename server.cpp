@@ -6,22 +6,25 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/14 00:21:39 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 21:41:52 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 #include "messagerror.hpp"
 #include "server.hpp"
 #include "User.hpp"
 #include "Channel.hpp"
 
-Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _password(password) {
+Server::Server(int port, std::string password): _sd(-1), _kq(-1), _port(port), _password(password) {
 	struct sockaddr_in serverAddr;
+	int opt = 1;
+	
 	if ((_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		shutDown("socket() error");
 
+	if (setsockopt(_sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+		throw std::runtime_error("Error while setting socket options...");
+	}
 	memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -36,11 +39,11 @@ Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _passw
         shutDown("listen() error");
 }
 
-const vector<string>& Server::getParams(void) const {
+const std::vector<std::string>& Server::getParams(void) const {
     return _params;
 }
 
-const string& Server::getCommand(void) const {
+const std::string& Server::getCommand(void) const {
     return _command;
 }
 
@@ -61,37 +64,37 @@ void Server::createNewClientSocket(void) {
 	memset(hostStr, 0, sizeof(hostStr));
 	memset(&clientAddr, 0, sizeof(clientAddr));
 	if ((clientSocket = accept(_sd, (struct sockaddr *)&clientAddr, &addrLen)) == -1) {
-		cerr << "aceept() failed! Check error : "<< endl;
+		std::cerr << "aceept() failed! Check error : "<< std::endl;
 		return ;
 	}
 	if (_allUser.size() >= 30) {
-		cout << "Server reached max number of user" << endl;
+		std::cout << "Server reached max number of user" << std::endl;
 		close(clientSocket);
 		return ;
 	}
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
 	// if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
-	// 	cout << "Error while getting hostname on new client..." << endl;
+	// 	std::cout << "Error while getting hostname on new client..." << std::endl;
 	// 	return ;
 	// }
-	cout << hostStr << endl;
+	std::cout << hostStr << std::endl;
 	inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
-	cout << "accept new client: " << clientSocket << " / Host : " << hostStr << endl;
+	std::cout << "accept new client: " << clientSocket << " / Host : " << hostStr << std::endl;
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
 
 	updateEvents(clientSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	updateEvents(clientSocket, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 
 	user = new User(clientSocket, hostStr);
-	_allUser.insert(make_pair(clientSocket, user));
+	_allUser.insert(std::make_pair(clientSocket, user));
 }
 
 void Server::run() {
 	int numOfEvents;
 
 	if ((_kq = kqueue()) == -1)
-        throw(runtime_error("kqueue() error"));
-	cout << "listening..." << endl;
+        throw(std::runtime_error("kqueue() error"));
+	std::cout << "listening..." << std::endl;
 	while (1) {
         numOfEvents = kevent(_kq, &eventList[0], eventList.size(), _waitingEvents, 8, NULL);
         if (numOfEvents == -1)
@@ -104,35 +107,35 @@ void Server::run() {
 
 void Server::recvClientData(const struct kevent& event) {
 	char buf[501];
-	string str;
-	vector<string> tab;
-	map<int, User *>::iterator it = _allUser.find(event.ident);
+	std::string str;
+	std::vector<std::string> tab;
+	std::map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 	int recvBytes;
 
 	if (it == _allUser.end()) return ;
 	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
-		cerr << "client recv error!" << endl;
+		std::cerr << "client recv error!" << std::endl;
 		cmdQuit(targetUser, event, tab);
 		_allUser.erase(event.ident);
 		close(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
+		std::cout << "client disconnected: " << event.ident << '\n';
 		return;
 	} else {
 		buf[recvBytes] = '\0';
 		targetUser->addToCmdBuffer(buf);
 		str = buf;
 		if (str[5] == ':') {str.erase(str.begin() + 5);}
-		// cout << str << endl;
+		// std::cout << ":: " + str << std::endl;
 		handleCmd(targetUser, event);
 	}
-	targetUser->clearCmdBuffer();
+	// targetUser->clearCmdBuffer();
 }
 
-bool Server::getUesrNickname(string nickname)
+bool Server::getUesrNickname(std::string nickname)
 {
-    map<int, User *>::iterator it;
+    std::map<int, User *>::iterator it;
     it = _allUser.begin();
 
     for (; it != _allUser.end(); it++)
@@ -148,14 +151,14 @@ void	Server::sendMessage(const struct kevent& event, std::string msg)
 	int sendBytes;
 	sendBytes = send(event.ident, msg.c_str(), msg.size(), 0);
 	if (sendBytes <= 0) {
-		cerr << "client send error!" << endl;
+		std::cerr << "client send error!" << std::endl;
 		_allUser.erase(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
+		std::cout << "client disconnected: " << event.ident << '\n';
 		return;
 	}
 }
 
-void	Server::checkPassword(std::vector<string> tab, User *user, const struct kevent& event)
+void	Server::checkPassword(std::vector<std::string> tab, User *user, const struct kevent& event)
 {
 	if (tab.size() < 1)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
@@ -173,11 +176,11 @@ void	Server::checkPassword(std::vector<string> tab, User *user, const struct kev
 	}
 }
 
-int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent& event)
+int		Server::checkNickExist(std::vector<std::string> tab, User* user, const struct kevent& event)
 {
 	(void)user;
 	(void)event;
-	for (map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++)
+	for (std::map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++)
 	{
 		if (tab[0].compare(it->second->getNickname()) == 0)
 			return (1);
@@ -185,7 +188,7 @@ int		Server::checkNickExist(vector<string> tab, User* user, const struct kevent&
 	return (0);
 }
 
-void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent& event)
+void	Server::checkUser(std::vector<std::string> tab, User* user, const struct kevent& event)
 {
 	if (tab.size() < 4)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
@@ -199,7 +202,7 @@ void	Server::checkUser(std::vector<string> tab, User* user, const struct kevent&
 	}
 }
 
-void	Server::checkNick(std::vector<string> tab, User* user, const struct kevent& event)
+void	Server::checkNick(std::vector<std::string> tab, User* user, const struct kevent& event)
 {
 	if (tab.size() < 1)
 	 	sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461);
@@ -264,23 +267,23 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 	user->clearCmdBuffer();
 }
 
-void	Server::sendMessageWelcom(string buffer, User* user, const struct kevent& event)
+void	Server::sendMessageWelcom(std::string buffer, User* user, const struct kevent& event)
 {
 	(void)user;
 	int	   sendBytes;
 	sendBytes = send(event.ident, buffer.c_str(), buffer.size(), 0);
 	if (sendBytes <= 0) {
-		cerr << "client send error!" << endl;
+		std::cerr << "client send error!" << std::endl;
 		_allUser.erase(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
+		std::cout << "client disconnected: " << event.ident << '\n';
 		return;
 	}
 }
 
-void	Server::authentication(std::vector<string> tab, User* user, const struct kevent& event)
+void	Server::authentication(std::vector<std::string> tab, User* user, const struct kevent& event)
 {
 	(void)tab;
-	string hostname = user->ft_hostname();
+	std::string hostname = user->ft_hostname();
 	std::string buffer = ":" + hostname + " 001 " +  user->getNickname() +  " :Welcome to the Internet Relay Network " + user->getNickname() + "!~" + user->getNickname() + "@" + hostname +"\r\n";
     buffer += ":" + hostname + " 002 " +  user->getNickname() + " :Your host is " + hostname + ", running version leet-irc 1.0.0\r\n";
     buffer += ":" + hostname + " 003 " +  user->getNickname() + " " + hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
@@ -290,7 +293,7 @@ void	Server::authentication(std::vector<string> tab, User* user, const struct ke
 }
 
 void Server::sendDataToClient(const struct kevent& event) {
-	map<int, User *>::iterator it = _allUser.find(event.ident);
+	std::map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 
 	if (it == _allUser.end()) return ;
@@ -302,28 +305,29 @@ void Server::sendDataToClient(const struct kevent& event) {
 void Server::handleEvent(const struct kevent& event) {
 	if (event.flags & EV_ERROR) {
 		if (event.ident == (const uintptr_t)_sd)
-			throw(runtime_error("server socket error"));
+			throw(std::runtime_error("server socket error"));
 		else {
-			cerr << "client socket error" << endl;
+			std::cerr << "client socket error" << std::endl;
 		}
 	} else if (event.filter == EVFILT_READ) {
 		if (event.ident == (const uintptr_t)_sd)
 			createNewClientSocket();
 		else
-			recvClientData(event);}
+			recvClientData(event);
+	}
 	else if (event.filter == EVFILT_WRITE)
 		sendDataToClient(event);
 }
 
-void Server::shutDown(const string& msg) {
+void Server::shutDown(const std::string& msg) {
 	if (_sd != -1)
 		close(_sd);
 	if (_kq != -1)
 		close(_kq);
-	for (map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++) {
+	for (std::map<int, User *>::iterator it = _allUser.begin(); it != _allUser.end(); it++) {
 		delete it->second;
 	}
-	cerr << msg << endl;
+	std::cerr << msg << std::endl;
 	exit(EXIT_FAILURE);
 }
 

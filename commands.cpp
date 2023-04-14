@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:59 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/13 23:42:27 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:51:21 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ void Server::cmdNotice(User *user, const struct kevent& event) {
 		return;
 	}
 
-    const vector<string> targetList = split(getParams()[0], ',');
-    for (vector<string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
-        string targetName = *it;
+    const std::vector<std::string> targetList = split(getParams()[0], ',');
+    for (std::vector<std::string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
+        std::string targetName = *it;
     	Channel *targetChannel;
 
         targetChannel = findChannelByName(targetName);
@@ -62,8 +62,8 @@ void Server::cmdKick(User *user, const struct kevent& event){
 			return;
 		}
 
-		const vector<string> targetUsers = split(_params[1], ',');
-		for (vector<string>::const_iterator it = targetUsers.begin(); it != targetUsers.end(); ++it) {
+		const std::vector<std::string> targetUsers = split(_params[1], ',');
+		for (std::vector<std::string>::const_iterator it = targetUsers.begin(); it != targetUsers.end(); ++it) {
 			
 			User *targetUser = targetChannel->findUserByNick(*it);
 			if (targetUser == NULL) {
@@ -80,28 +80,28 @@ void Server::cmdKick(User *user, const struct kevent& event){
 	}
 }
 
-void	Server::sendMessage_error(string nickname, const struct kevent& event, std::string msg, int code)
+void	Server::sendMessage_error(std::string nickname, const struct kevent& event, std::string msg, int code)
 {
 	int sendBytes;
 	std::string name;
-	stringstream ss;
+	std::stringstream ss;
 	
 	ss << code;
 	name = ss.str()  + " " + nickname + msg + "\n";
 	sendBytes = send(event.ident, name.c_str(), name.size(), 0);
 	if (sendBytes <= 0) {
-		cerr << "client send error!" << endl;
+		std::cerr << "client send error!" << std::endl;
 		_allUser.erase(event.ident);
-		cout << "client disconnected: " << event.ident << '\n';
+		std::cout << "client disconnected: " << event.ident << '\n';
 		return;
 	}
 }
 
-void Server::cmdInvite(User *user, const struct kevent event, vector<string> invite)
+void Server::cmdInvite(User *user, const struct kevent event, std::vector<std::string> invite)
 {
-	map<string, Channel *>::iterator it;
-	string nickname = invite[0];
-	string channel = invite[1];
+	std::map<std::string, Channel *>::iterator it;
+	std::string nickname = invite[0];
+	std::string channel = invite[1];
 
 	if (invite.size() != 2)
 		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));

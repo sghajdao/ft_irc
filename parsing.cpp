@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:21:31 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 15:19:51 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,11 @@
 #include "Channel.hpp"
 #include <iostream>
 
-int		Server::checkUserExist(vector<string> tab, User* user, const struct kevent& event)
+int		Server::checkUserExist(std::vector<std::string> tab, User* user, const struct kevent& event)
 {
 	(void)user;
 	(void)event;
-	map<int, User *>::iterator it = _allUser.begin();
+	std::map<int, User *>::iterator it = _allUser.begin();
 	for (; it != _allUser.end(); it++)
 	{
 		if (tab[0].compare(it->second->getUsername()) == 0)
@@ -36,14 +36,14 @@ std::string	stringTolower(std::string str)
 	return(str);
 }
 
-void Server::findCmd(string cmd) {
+void Server::findCmd(std::string cmd) {
 	
 	for (unsigned long i = 0; i < cmd.length(); ++i){
 		if (cmd[i] == '\t') {cmd[i] = ' ';}
 	}
-	vector<string> splitedCmd = split(cmd, ' ');
+	std::vector<std::string> splitedCmd = split(cmd, ' ');
 
-	for (vector<string>::size_type i = 0; i < splitedCmd.size(); ++i) {
+	for (std::vector<std::string>::size_type i = 0; i < splitedCmd.size(); ++i) {
 		if (_command.empty()) {
             _command = splitedCmd[i];
             continue;
@@ -56,33 +56,34 @@ size_t Server::checkCmd(User *user) {
 	const size_t	brPos = user->getCmdBuffer().find('\r', 0);
 	const size_t	bnPos = user->getCmdBuffer().find('\n', 0);
 
-	if (brPos == string::npos && bnPos == string::npos) return string::npos;
-	if (bnPos == string::npos) return brPos;
-	if (brPos == string::npos) return bnPos;
-	return min(brPos, bnPos);
+	if (brPos == std::string::npos && bnPos == std::string::npos) return std::string::npos;
+	if (bnPos == std::string::npos) return brPos;
+	if (brPos == std::string::npos) return bnPos;
+	return std::min(brPos, bnPos);
 }
 
 void Server::handleCmd(User *user, const struct kevent& event) {
 	size_t pos;
 
-	while ((pos = checkCmd(user)) != string::npos) {
+	while ((pos = checkCmd(user)) != std::string::npos) {
 		if (pos == 0) {
 			user->setCmdBuffer(user->getCmdBuffer().substr(1));
 			continue;
 		}
         findCmd(user->getCmdBuffer().substr(0, pos));
+		user->setCmdBuffer(user->getCmdBuffer().substr(pos + 1)); /****** THE MAGICAL LINE ******/
         __parssingCommand(user, event);
         _command.clear();
 		_params.clear();
 	}
 }
 
-vector<string> Server::split(const string& str, const char delimeter) {
-    vector<string> splited;
+std::vector<std::string> Server::split(const std::string& str, const char delimeter) {
+    std::vector<std::string> splited;
     size_t cursorPos = 0;
     size_t delimeterPos;
 
-    while ((delimeterPos = str.find(delimeter, cursorPos)) != string::npos) { // TODO nops c++20
+    while ((delimeterPos = str.find(delimeter, cursorPos)) != std::string::npos) { // TODO nops c++20
         splited.push_back(str.substr(cursorPos, delimeterPos - cursorPos));
         while (str.at(delimeterPos) == delimeter) {
             if (++delimeterPos == str.length()) return splited;
@@ -93,18 +94,18 @@ vector<string> Server::split(const string& str, const char delimeter) {
     return splited;
 }
 
-User* Server::findClientByNickname(const string& nickname) const {
-	map<int, User*>::const_iterator it;
+User* Server::findClientByNickname(const std::string& nickname) const {
+	std::map<int, User*>::const_iterator it;
 	for (it = _allUser.cbegin(); it != _allUser.end(); ++it) {
 		if (it->second->getNickname() == nickname) return it->second;
 	}
 	return NULL;
 }
 
-Channel* Server::findChannelByName(const string& name) const {
+Channel* Server::findChannelByName(const std::string& name) const {
 	if (name[0] != '#') return NULL;
 	
-	map<string, Channel *>::const_iterator it;
+	std::map<std::string, Channel *>::const_iterator it;
 	for (it = _allChannel.cbegin(); it != _allChannel.end(); ++it) {
 		if (it->second->getName() == name) return it->second;
 	}
@@ -112,35 +113,35 @@ Channel* Server::findChannelByName(const string& name) const {
 }
 
 /* IN JOIN COMMAND */
-Channel* Server::addChannel(const string& name) {
+Channel* Server::addChannel(const std::string& name) {
 	if (_allChannel.size() >= 30) return NULL;
 	
 	Channel *ch;
 
 	ch = new Channel(name);
-	_allChannel.insert(make_pair(name, ch));
-	cout << "channel added: " << name << '\n';
+	_allChannel.insert(std::make_pair(name, ch));
+	std::cout << "channel added: " << name << '\n';
 	return ch;
 }
 
-void Server::deleteChannel(const string& name) {
-	map<string, Channel *>::iterator it = _allChannel.find(name);
+void Server::deleteChannel(const std::string& name) {
+	std::map<std::string, Channel *>::iterator it = _allChannel.find(name);
 	Channel *ch = it->second;
 
 	if (it == _allChannel.end()) return ;
 
-	cout << "Delete channel from server: " << name << '\n';
+	std::cout << "Delete channel from server: " << name << '\n';
 	_allChannel.erase(name);
 	delete ch;
 }
 
-const string Server::createReplyForm(User *user) const {
-	string msg;
-	for (vector<string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
+const std::string Server::createReplyForm(User *user) const {
+	std::string msg;
+	for (std::vector<std::string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
 		msg.append(*it + " ");
 	}
 	msg.append("\r\n");
-	string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + user->getNickname() + ((_params.size() > 2 && msg.find(":") != 2) ? " :" : " ");
+	std::string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + user->getNickname() + ((_params.size() > 2 && msg.find(":") != 2) ? " :" : " ");
 	prefix.append(msg);
 	return prefix;
 }
@@ -151,9 +152,9 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 		return;
 	}
 
-    const vector<string> targetList = split(getParams()[0], ',');
-    for (vector<string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
-        string targetName = *it;
+    const std::vector<std::string> targetList = split(getParams()[0], ',');
+    for (std::vector<std::string>::const_iterator it = targetList.begin(); it != targetList.end(); ++it) {
+        std::string targetName = *it;
         User *targetUser;
 
 		if ((*it)[0] == '#') {
@@ -170,8 +171,8 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 			sendMessage_error(user->getNickname(), event, ERR_NOSUCHNICK, 401);
 			continue;
 		}
-		string msg;
-		for (vector<string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
+		std::string msg;
+		for (std::vector<std::string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
 			if (it + 1 == _params.end()){
 				msg.append(*it);
 				continue;
@@ -180,12 +181,12 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 		}
 		msg.append("\r\n");
 		if (msg[0] == ':') {msg.erase(msg.begin());}
-		string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!" + user->getNickname()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
+		std::string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!" + user->getNickname()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
 		targetUser->addToReplyBuffer(prefix + msg);
     }
 }
 
-int calculate_size(vector<string> str)
+int calculate_size(std::vector<std::string> str)
 {
     int length = 0;
 
@@ -195,11 +196,11 @@ int calculate_size(vector<string> str)
 
 }
 
-void Server::cmdJoin(User *user, const struct kevent& event, vector<string> channel)
+void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::string> channel)
 {
-	std::vector<string> name_channel;
-	std::vector<string> key_channel;
-	string str;
+	std::vector<std::string> name_channel;
+	std::vector<std::string> key_channel;
+	std::string str;
 	int x = 0;
 	if (channel.empty())
 		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
@@ -211,7 +212,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 	}
 	for(size_t i = 0; i < name_channel.size(); i++)
 	{
-		map<string, Channel *>::iterator it;
+		std::map<std::string, Channel *>::iterator it;
 		if ((name_channel[i][0] != '#' && name_channel[i][0] != '&') || (name_channel[i].size() == 1 && (name_channel[i][0] == '#' || name_channel[i][0] == '&')))
 			return(sendMessage_error(name_channel[i], event, ERR_BADCHANMASK, 915));
 		it = _allChannel.find(name_channel[i]);
@@ -233,7 +234,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 								user->addChannelUser(name_channel[i]);
 								it->second->broadcast(user, this, "",  1);
 								str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
-								vector<string> vect;
+								std::vector<std::string> vect;
 								vect = it->second->getAllUser();
 								for (size_t i = 0; i != vect.size(); i++)
 								{
@@ -259,7 +260,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 							user->addChannelUser(name_channel[i]);
 							it->second->broadcast(user, this, "",  1);
 							str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
-							vector<string> vect;
+							std::vector<std::string> vect;
 							vect = it->second->getAllUser();
 							for (size_t i = 0; i != vect.size(); i++)
 							{
@@ -288,7 +289,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 						it->second->addUser(event.ident, user);
 						user->addChannelUser(name_channel[i]);
 						it->second->broadcast(user, this, "",  1);
-						vector<string> vect;
+						std::vector<std::string> vect;
 						str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
 						vect = it->second->getAllUser();
 						for (size_t i = 0; i != vect.size(); i++)
@@ -309,7 +310,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 					it->second->addUser(event.ident, user);
 					user->addChannelUser(name_channel[i]);
 					it->second->broadcast(user, this, "",  1);
-					vector<string> vect;
+					std::vector<std::string> vect;
 					str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
 					vect = it->second->getAllUser();
 					for (size_t i = 0; i != vect.size(); i++)
@@ -340,9 +341,9 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				channel->setFoundtopic(false);
 				channel->setFindPass(false);
 				channel->setInvit(false);
-				_allChannel.insert(make_pair(name_channel[i], channel));
+				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
-				vector<string> vect;
+				std::vector<std::string> vect;
 				vect = channel->getAllUser();
 				for (size_t i = 0; i != vect.size(); i++)
 				{
@@ -366,9 +367,9 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 				channel->setFoundtopic(false);
 				channel->setFindPass(true);
 				channel->setInvit(false);
-				_allChannel.insert(make_pair(name_channel[i], channel));
+				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
-				vector<string> vect;
+				std::vector<std::string> vect;
 				vect = channel->getAllUser();
 				for (size_t i = 0; i != vect.size(); i++)
 				{
@@ -385,11 +386,11 @@ void Server::cmdJoin(User *user, const struct kevent& event, vector<string> chan
 	}
 }
 
-void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
+void Server::cmdPart(User *user, const struct kevent& event, std::vector<std::string> tab)
 {
-	vector<string> channel_leave;
-	vector<string> reason;
-	map<string, Channel *>::iterator it;
+	std::vector<std::string> channel_leave;
+	std::vector<std::string> reason;
+	std::map<std::string, Channel *>::iterator it;
 	int x = 0;
 	if (tab.empty())
 		return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
@@ -450,19 +451,19 @@ void Server::cmdPart(User *user, const struct kevent& event, vector<string> tab)
 	}
 }
 
-void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
+void Server::cmdMode(User *user, const struct kevent& event, std::vector<std::string> tab)
 {
-	map<string, Channel *>::iterator it;
-	string str;
+	std::map<std::string, Channel *>::iterator it;
+	std::string str;
 	User *tmp;
 
 	if (tab.size() < 2)
 		return;
-	cout << tab.size() << endl;
+	std::cout << tab.size() << std::endl;
 	if (tab.empty() || tab.size() > 3)
 		return(sendMessage_error(user->getNickname(), event, " :More parameters", 461));
 	it = _allChannel.find(tab[0]);
-	cout << tab[0] << endl;
+	std::cout << tab[0] << std::endl;
 	if (it != _allChannel.end())
 	{
 		if (tab[1] == "+k")
@@ -542,9 +543,9 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403);
 }
 
-void Server::cmdTopic(User *user, const struct kevent& event, vector<string> tab)
+void Server::cmdTopic(User *user, const struct kevent& event, std::vector<std::string> tab)
 {
-	map<string, Channel *>::iterator it;
+	std::map<std::string, Channel *>::iterator it;
 
 	if (tab.empty())
 		return (sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
@@ -615,14 +616,14 @@ void Server::cmdTopic(User *user, const struct kevent& event, vector<string> tab
 		return (sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403));
 }
 
-void Server::cmdQuit(User *user, const struct kevent& event, vector<string> tab)
+void Server::cmdQuit(User *user, const struct kevent& event, std::vector<std::string> tab)
 {
 	(void)event;
 	(void)tab;
 
 	User 	*tmp;
-	vector<string> channel = user->getUser();
-	map<string, Channel *>::iterator it;
+	std::vector<std::string> channel = user->getUser();
+	std::map<std::string, Channel *>::iterator it;
 	for (size_t i = 0; i < channel.size(); i++)
 	{
 		it = _allChannel.find(channel[i]);
@@ -645,7 +646,7 @@ void Server::cmdQuit(User *user, const struct kevent& event, vector<string> tab)
 			}
 		}
 	}
-	map<int, User *>::const_iterator it1;
+	std::map<int, User *>::const_iterator it1;
 	it1 = _allUser.find(user->getFd());
 	if (it1 != _allUser.end())
 	{

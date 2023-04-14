@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   messagerror.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:27 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/12 22:38:00 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 01:01:20 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@
 
 #define ERROR " :There is more parameters"
 #define ERR_REGISTERED " :You must registred entre command <PASS> <USER> <NICK>"
-#define ERR_BADCHANNELKEY " :Cannot join channel (+k)"
+#define ERR_BADCHANNELKEY " :Cannot join channel"
 #define ERR_CHANOPRIVSNEEDED " :You're not channel operator"
 /******************************/
 /*         INVITE Error       */

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:38 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/13 16:48:39 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:49:58 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 # include <string>
 # include <vector>
 
-using namespace std;
-
 class User {
 	public:
 		int _sd;
@@ -24,76 +22,76 @@ class User {
 		bool _user;
 		bool _nick;
 		bool registred;
-		string _host;
-		string _password;
-		string _nickname;
-		string _username;
-		string _hostname;
-		string _servername;
-		string _realname;
-		string _cmdBuffer;
-		string _replyBuffer;
-		string _reason;
-		string _channel_leave;
+		std::string _host;
+		std::string _password;
+		std::string _nickname;
+		std::string _username;
+		std::string _hostname;
+		std::string _servername;
+		std::string _realname;
+		std::string _cmdBuffer;
+		std::string _replyBuffer;
+		std::string _reason;
+		std::string _channel_leave;
 		bool _isQuiting;
-		vector<string> _channelOfUser;
-		vector<string> _channelOfOperatore;
+		std::vector<std::string> _channelOfUser;
+		std::vector<std::string> _channelOfOperatore;
 
 	public:
 		User(void);
 		User(const User& user);
 		User& operator=(const User& user);
-        User(int fd, const string& host);
+        User(int fd, const std::string& host);
 		~User();
-		void addChannelUser(string channel);
-		void addChannelOperator(string channel);
-		void deleteChannelUser(string channel);
-		void deleteChannelOperator(string channel);
-		bool SearchChannelOperator(string channel);
-		bool SearchChannelUser(string channel);
+		void addChannelUser(std::string channel);
+		void addChannelOperator(std::string channel);
+		void deleteChannelUser(std::string channel);
+		void deleteChannelOperator(std::string channel);
+		bool SearchChannelOperator(std::string channel);
+		bool SearchChannelUser(std::string channel);
 		int getFd(void) const;
-		const string& getHost(void) const;
-		string getPassword(void);
-		const string getNickname(void) const;
-		const string getSource(void) const;
-		const string& getUsername(void) const;
-		const string& getHostname(void) const;
-		const string& getServername(void) const;
-		const string& getRealname(void) const;
-		const string& getCmdBuffer(void) const;
-		const string& getReplyBuffer(void) const;
+		const std::string& getHost(void) const;
+		std::string getPassword(void);
+		const std::string getNickname(void) const;
+		const std::string getSource(void) const;
+		const std::string& getUsername(void) const;
+		const std::string& getHostname(void) const;
+		const std::string& getServername(void) const;
+		const std::string& getRealname(void) const;
+		const std::string& getCmdBuffer(void) const;
+		const std::string& getReplyBuffer(void) const;
 		bool getIsQuiting(void) const;
 		bool getIsUser(void) const;
 		bool getIsPass(void) const;
 		bool getIsNick(void) const;
 		int  getRegistred(void) const;
-		const string& getReason(void) const;
-		const string& getChannelLeave(void) const;
+		const std::string& getReason(void) const;
+		const std::string& getChannelLeave(void) const;
 
-		void setPassword(const string& pwd);
-		void setNickname(const string& nickname);
-		void setUsername(const string& username);
-		void setHostname(const string& hostname);
-		void setServername(const string& servername);
-		void setRealname(const string& realname);
+		void setPassword(const std::string& pwd);
+		void setNickname(const std::string& nickname);
+		void setUsername(const std::string& username);
+		void setHostname(const std::string& hostname);
+		void setServername(const std::string& servername);
+		void setRealname(const std::string& realname);
 		void setIsQuiting(void);
 		void setIsUser(void);
 		void setIsPass(void);
 		void setIsNick(void);
 		void setRegistred(void);
 		void setFd(int fd);
-		void setReason(const string& reason);
-		void setChannelLeave(const string& channel);
+		void setReason(const std::string& reason);
+		void setChannelLeave(const std::string& channel);
 
-		void setCmdBuffer(const string& src);
+		void setCmdBuffer(const std::string& src);
 		void clearCmdBuffer(void);
-		void setReplyBuffer(const string& src);
+		void setReplyBuffer(const std::string& src);
 		void clearReplyBuffer(void);
-		void addToCmdBuffer(const string& src);
-		void addToReplyBuffer(const string& src);
-		string ft_hostname();
-		vector<string> getUser();
-		vector<string> getChannelList();
+		void addToCmdBuffer(const std::string& src);
+		void addToReplyBuffer(const std::string& src);
+		std::string ft_hostname();
+		std::vector<std::string> getUser();
+		std::vector<std::string> getChannelList();
 
 };
 
