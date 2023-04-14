@@ -6,9 +6,10 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/14 00:11:42 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:21:39 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 
 #include "messagerror.hpp"
@@ -240,10 +241,10 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdJoin(user, event, _params);
 	else if (_command.compare("PART") == 0 || _command.compare("part") == 0)
 		cmdPart(user, event, _params);
-	else if (_command.compare("INVITE") == 0 || _command.compare("invite") == 0)
-		cmdInvite(user, event, _params);
 	else if (_command.compare("MODE") == 0 || _command.compare("mode") == 0)
 		cmdMode(user, event, _params);
+	else if (_command.compare("INVITE") == 0 || _command.compare("invite") == 0)
+		cmdInvite(user, event, _params);
 	else if (_command.compare("NOTICE") == 0 || _command.compare("notice") == 0)
 		cmdNotice(user, event);
 	else if (_command.compare("KICK") == 0 || _command.compare("kick") == 0)
@@ -254,6 +255,10 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 		cmdQuit(user, event, _params);
 	else if (_command.compare("JOKE") == 0 || _command.compare("joke") == 0)
 		boot(event);
+	else if (_command.compare("PONG") == 0 || _command.compare("pong") == 0)
+		return ;
+	else if (_command.compare("PING") == 0 || _command.compare("ping") == 0)
+		return ;
 	else
 		sendMessage_error(_command, event, " :Command not found", 912);
 	user->clearCmdBuffer();

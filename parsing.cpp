@@ -6,9 +6,10 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:10:58 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:21:31 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "server.hpp"
 #include "User.hpp"
@@ -455,15 +456,17 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 	string str;
 	User *tmp;
 
-	if (tab.size() == 0 || tab.size() > 3)
+	if (tab.size() < 2)
+		return;
+	cout << tab.size() << endl;
+	if (tab.empty() || tab.size() > 3)
 		return(sendMessage_error(user->getNickname(), event, " :More parameters", 461));
 	it = _allChannel.find(tab[0]);
+	cout << tab[0] << endl;
 	if (it != _allChannel.end())
 	{
 		if (tab[1] == "+k")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 1)
 			{
 				it->second->editPassword(tab[2]);
@@ -491,8 +494,6 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		}
 		else if(tab[1] == "+o")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
 				if (it->second->findOperatorIfExistByNick(tab[2]))
@@ -510,8 +511,6 @@ void Server::cmdMode(User *user, const struct kevent& event, vector<string> tab)
 		}
 		else if(tab[1] == "-o")
 		{
-			if (tab.size() < 2)
-				return(sendMessage_error(user->getNickname(), event, ERR_NEEDMOREPARAMS, 461));
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
 				if (it->second->_operators.size() == 1 && it->second->_userList.size() == 1)
