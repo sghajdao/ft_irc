@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 17:50:07 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 21:49:54 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ class Channel {
         bool findOperatorIfExist(const int clientFd);
         bool findOperatorIfExistByNick(std::string nick);
         User* findUserByNick(const std::string& nickname);
-        void broadcast(User *user ,Server *server, int ignoreFd, int flag) const;
+        void broadcast(User *user ,Server *server, string option, int flag) const;
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);

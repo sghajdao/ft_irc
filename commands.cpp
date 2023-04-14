@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:59 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 22:23:28 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 23:42:27 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void Server::cmdNotice(User *user, const struct kevent& event) {
 			sendMessage_error(user->getNickname(), event, ERR_NOSUCHCHNL, 401);
 			continue;
 		}
-		targetChannel->broadcast(user , this, -1, 0);
+		targetChannel->broadcast(user , this, "", 0);
     }
 }
 
@@ -72,7 +72,10 @@ void Server::cmdKick(User *user, const struct kevent& event){
 			}
 
 			int flag = targetChannel->deleteUser(targetUser->getFd());
-			if (flag == 0) {deleteChannel(targetChannel->getName());}
+			targetChannel->broadcast(user, this, " KICK " + targetChannel->getName() + " " + targetUser->getNickname(), 3);
+			if (flag == 0) {
+				deleteChannel(targetChannel->getName());
+			}
 		}
 	}
 }

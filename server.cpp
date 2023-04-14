@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/12 22:30:53 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/14 00:11:42 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "messagerror.hpp"
 #include "server.hpp"
 #include "User.hpp"
+#include "Channel.hpp"
 
 Server::Server(int port, string password): _sd(-1), _kq(-1), _port(port), _password(password) {
 	struct sockaddr_in serverAddr;
@@ -103,6 +104,7 @@ void Server::run() {
 void Server::recvClientData(const struct kevent& event) {
 	char buf[501];
 	string str;
+	vector<string> tab;
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
 	int recvBytes;
@@ -111,7 +113,9 @@ void Server::recvClientData(const struct kevent& event) {
 	recvBytes = recv(event.ident, buf, 500, 0);
 	if (recvBytes <= 0) {
 		cerr << "client recv error!" << endl;
+		cmdQuit(targetUser, event, tab);
 		_allUser.erase(event.ident);
+		close(event.ident);
 		cout << "client disconnected: " << event.ident << '\n';
 		return;
 	} else {
@@ -283,20 +287,9 @@ void	Server::authentication(std::vector<string> tab, User* user, const struct ke
 void Server::sendDataToClient(const struct kevent& event) {
 	map<int, User *>::iterator it = _allUser.find(event.ident);
 	User* targetUser = it->second;
-	// int sendBytes;
 
 	if (it == _allUser.end()) return ;
 	if (targetUser->getReplyBuffer().empty()) return;
-
-	// sendBytes = send(event.ident, targetUser->getReplyBuffer().c_str(), targetUser->getReplyBuffer().length(), 0);
-	// if (sendBytes == -1) {
-	// 	cerr << "client send error!" << endl; 
-	// 	return ;
-	// } else {
-	// 	targetUser->setReplyBuffer(targetUser->getReplyBuffer().substr(sendBytes));
-	// 	cout << targetUser->getReplyBuffer() << endl;
-	// 	if (targetUser->getIsQuiting() && targetUser->getReplyBuffer().empty()) _allUser.erase(event.ident);
-	// }
 	sendMessage(event, targetUser->getReplyBuffer());
 	targetUser->setReplyBuffer("");
 }

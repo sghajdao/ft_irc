@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:38 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 21:12:20 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 16:48:39 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ class User {
 		string _realname;
 		string _cmdBuffer;
 		string _replyBuffer;
+		string _reason;
+		string _channel_leave;
 		bool _isQuiting;
 		vector<string> _channelOfUser;
 		vector<string> _channelOfOperatore;
@@ -65,6 +67,8 @@ class User {
 		bool getIsPass(void) const;
 		bool getIsNick(void) const;
 		int  getRegistred(void) const;
+		const string& getReason(void) const;
+		const string& getChannelLeave(void) const;
 
 		void setPassword(const string& pwd);
 		void setNickname(const string& nickname);
@@ -78,6 +82,8 @@ class User {
 		void setIsNick(void);
 		void setRegistred(void);
 		void setFd(int fd);
+		void setReason(const string& reason);
+		void setChannelLeave(const string& channel);
 
 		void setCmdBuffer(const string& src);
 		void clearCmdBuffer(void);

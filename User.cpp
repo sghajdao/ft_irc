@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:27 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 21:12:05 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 16:49:11 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,14 @@ bool User::getIsNick(void) const {
     return _nick;
 }
 
+const string& User::getReason(void) const {
+    return _reason;
+}
+
+const string& User::getChannelLeave(void) const {
+    return _channel_leave;
+}
+
 void User::setFd(int fd) {
     _sd = fd;
 }
@@ -166,6 +174,14 @@ int  User::getRegistred(void) const
 void User::setRegistred(void)
 {
     registred = true;
+}
+
+void User::setReason(const string& reason) {
+    _reason = reason;
+}
+
+void User::setChannelLeave(const string& channel) {
+    _channel_leave = channel;
 }
 
 User& User::operator=(const User& user)

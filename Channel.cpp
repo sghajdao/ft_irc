@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/12 22:46:49 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/13 23:34:38 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,20 +39,22 @@ const string& Channel::getName(void) const {
     return _name;
 }
 
-void Channel::broadcast(User *user ,Server *server, int ignoreFd, int flag) const {
+void Channel::broadcast(User *user ,Server *server, string option, int flag) const {
     map<int, User *>::const_iterator it;
     const string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
-        if (it->first == ignoreFd) continue;
+        // if (it->first == ignoreFd) continue;
         if (flag == 0)
             it->second->addToReplyBuffer(server->createReplyForm(user));
-        else
+        else if (flag == 1)
             it->second->addToReplyBuffer(":"+user->getNickname()+"!"+user->getUsername()+"@"+user->getHost()+ " JOIN :" + user->getChannelList().back() + "\n");
-        // {
-        //     string msg = ":"+user->getNickname()+"!~"+user->getUsername()+"@"+user->ft_hostname()+ " JOIN :" + user->getChannelList().back() + "\n";
-        //     send(it->second->getFd(), msg.c_str(), msg.size(), 0);
-        // }
+        else if (flag == 2) {
+            it->second->addToReplyBuffer(":"+user->getNickname()+"!"+user->getUsername()+"@"+user->getHost()+ " PART " + user->getChannelLeave() + (user->getReason().empty() ? "" : (" :" + user->getReason())) + "\n");
+        }
+        else if (flag == 3) {
+            it->second->addToReplyBuffer(":" + (user->getUsername().empty() ? "" : (user->getNickname() + "!" + user->getUsername())) + "@" + user->getHost() + option + "\n");
+        }
     }
 }
 
@@ -338,10 +340,7 @@ void Channel::deleteInvite(std::string nickname)
 {
   std::vector<std::string>::iterator it;
 
-  it = _invite.begin();
-  for (; it != _invite.end(); it++)
-  {
-    if (it->find(nickname))
-      _invite.erase(it);
-  }
+  it = find(_invite.begin(), _invite.end(), nickname);
+    if (it != _invite.end())
+        _invite.erase(it);
 }
