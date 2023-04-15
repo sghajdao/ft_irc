@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/14 21:41:52 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/15 17:01:16 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,6 @@ void Server::recvClientData(const struct kevent& event) {
 		targetUser->addToCmdBuffer(buf);
 		str = buf;
 		if (str[5] == ':') {str.erase(str.begin() + 5);}
-		// std::cout << ":: " + str << std::endl;
 		handleCmd(targetUser, event);
 	}
 	// targetUser->clearCmdBuffer();

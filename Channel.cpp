@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:51:56 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/15 17:08:11 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void Channel::broadcast(User *user ,Server *server, std::string option, int flag
     const std::string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
-        // if (it->first == ignoreFd) continue;
+        if (it->second->getNickname() == user->getNickname() && flag == 0) continue;
         if (flag == 0)
             it->second->addToReplyBuffer(server->createReplyForm(user));
         else if (flag == 1)
