@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/15 15:43:26 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/15 15:58:48 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ const std::string Server::createReplyForm(User *user) const {
 	}
 	if (msg[0] == ':') {msg.erase(msg.begin());}
 	msg.append("\r\n");
-	std::string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + user->getChannelList().back() + (_params.size() > 2 ? " :" : " ");
+	std::string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + _params[0] + (_params.size() > 2 ? " :" : " ");
 	prefix.append(msg);
 	return prefix;
 }
@@ -167,23 +167,26 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 			}
 			targetChannel->broadcast(user , this, "", 0);
 		}
-        targetUser = findClientByNickname(targetName);
-        if (targetUser == NULL) {
-			sendMessage_error(user->getNickname(), event, ERR_NOSUCHNICK, 401);
-			continue;
-		}
-		std::string msg;
-		for (std::vector<std::string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
-			if (it + 1 == _params.end()){
-				msg.append(*it);
+		else
+		{
+        	targetUser = findClientByNickname(targetName);
+        	if (targetUser == NULL) {
+				sendMessage_error(user->getNickname(), event, ERR_NOSUCHNICK, 401);
 				continue;
 			}
-			msg.append(*it + " ");
+			std::string msg;
+			for (std::vector<std::string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
+				if (it + 1 == _params.end()){
+					msg.append(*it);
+					continue;
+				}
+				msg.append(*it + " ");
+			}
+			msg.append("\r\n");
+			if (msg[0] == ':') {msg.erase(msg.begin());}
+			std::string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!" + user->getNickname()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
+			targetUser->addToReplyBuffer(prefix + msg);
 		}
-		msg.append("\r\n");
-		if (msg[0] == ':') {msg.erase(msg.begin());}
-		std::string prefix = ":" + user->getNickname() + (user->getNickname().empty() ? "" : "!" + user->getNickname()) + (user->getHost().empty() ? "" : "@" + user->getHost()) + " PRIVMSG " + targetUser->getNickname() + (_params.size() > 2 ? " :" : " ");
-		targetUser->addToReplyBuffer(prefix + msg);
     }
 }
 
@@ -411,6 +414,12 @@ void Server::cmdPart(User *user, const struct kevent& event, std::vector<std::st
 			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
 			{
 				User 	*tmp;
+				if (reason.size() == 0)
+					it->second->broadcast(user, this, "", 2);
+				else {
+					user->setReason(reason[0]);
+					it->second->broadcast(user, this, "", 2);
+				}
 				it->second->deleteUser(user->getFd());
 				it->second->deleteOperator(user->getFd());
 				// it->second->deleteInvite(user->getNickname());
@@ -420,24 +429,18 @@ void Server::cmdPart(User *user, const struct kevent& event, std::vector<std::st
 					tmp = it->second->findSecondUser(user->getNickname());
 					it->second->addOperators(tmp->getFd(), tmp);
 				}
-				if (reason.size() == 0)
-					it->second->broadcast(user, this, "", 2);
-				else {
-					user->setReason(reason[0]);
-					it->second->broadcast(user, this, "", 2);
-				}
 			}
 			else if (it->second->findUserIfExistByFd(user->getFd()))
 			{
-				it->second->deleteUser(user->getFd());
-				// it->second->deleteInvite(user->getNickname());
-				user->deleteChannelUser(channel_leave[i]);
 				if (x == 0)
 					it->second->broadcast(user, this, "", 2);
 				else {
 					user->setReason(reason[0]);
 					it->second->broadcast(user, this, "", 2);
 				}
+				it->second->deleteUser(user->getFd());
+				// it->second->deleteInvite(user->getNickname());
+				user->deleteChannelUser(channel_leave[i]);
 			}
 			else
 				sendMessage_error(user->getNickname(), event, " :You're not reregister in this channel :" + channel_leave[i], 915);
@@ -460,11 +463,9 @@ void Server::cmdMode(User *user, const struct kevent& event, std::vector<std::st
 
 	if (tab.size() < 2)
 		return;
-	std::cout << tab.size() << std::endl;
 	if (tab.empty() || tab.size() > 3)
 		return(sendMessage_error(user->getNickname(), event, " :More parameters", 461));
 	it = _allChannel.find(tab[0]);
-	std::cout << tab[0] << std::endl;
 	if (it != _allChannel.end())
 	{
 		if (tab[1] == "+k")
