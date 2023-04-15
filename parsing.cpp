@@ -6,7 +6,7 @@
 /*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 15:19:51 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/15 15:43:26 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,8 +140,9 @@ const std::string Server::createReplyForm(User *user) const {
 	for (std::vector<std::string>::const_iterator it = _params.begin() + 1; it != _params.end(); ++it) {
 		msg.append(*it + " ");
 	}
+	if (msg[0] == ':') {msg.erase(msg.begin());}
 	msg.append("\r\n");
-	std::string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + user->getNickname() + ((_params.size() > 2 && msg.find(":") != 2) ? " :" : " ");
+	std::string prefix = ":" + user->getNickname() + (user->getUsername().empty() ? "" : "!" + user->getUsername()) + (user->ft_hostname().empty() ? "" : "@" + user->ft_hostname()) + ((_command == "PRIVMSG" || _command == "privmsg") ? " PRIVMSG " : " NOTICE ") + user->getChannelList().back() + (_params.size() > 2 ? " :" : " ");
 	prefix.append(msg);
 	return prefix;
 }
