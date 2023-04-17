@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/16 23:34:01 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/17 15:37:59 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,6 @@ void Server::createNewClientSocket(void) {
 	}
 	if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
 		shutDown("fcntl() error");
-	// if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
-	// 	std::cout << "Error while getting hostname on new client..." << std::endl;
-	// 	return ;
-	// }
 	std::cout << hostStr << std::endl;
 	inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
 	std::cout << "accept new client: " << clientSocket << " / Host : " << hostStr << std::endl;
@@ -128,10 +124,8 @@ void Server::recvClientData(const struct kevent& event) {
 		targetUser->addToCmdBuffer(buf);
 		str = buf;
 		if (str[5] == ':') {str.erase(str.begin() + 5);}
-		// std::cout << ":: " + str << std::endl;
 		handleCmd(targetUser, event);
 	}
-	// targetUser->clearCmdBuffer();
 }
 
 bool Server::getUesrNickname(std::string nickname)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:59 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:51:21 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/17 15:35:54 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,28 +37,28 @@ void Server::cmdNotice(User *user, const struct kevent& event) {
 
 void Server::cmdKick(User *user, const struct kevent& event){
 	if (_params.size() < 2) {
-		sendMessage(event, ERR_NEEDMOREPARAMS);
+		sendMessage_error(user->getNickname(), event, " :Not enough parameters", 461);
 		return;
 	}
 
 	if (_params.size() == 2) {
 
 		if ((_params[0][0] != '#' && _params[0][0] != '&') || (_params[0].size() == 1 && (_params[0][0] == '#' || _params[0][0] == '&')))
-			sendMessage(event, " :Bad Channel Mask");
+			sendMessage_error(user->getNickname(), event, " :Bad Channel Mask", 476);
 
 		Channel *targetChannel = findChannelByName(_params[0]);
 		if (targetChannel == NULL) {
-			sendMessage(event, ERR_NOSUCHCHNL);
+			sendMessage_error(user->getNickname(), event, " :No such channel", 403);
 			return;
 		}
 
 		if (targetChannel->findUserByFd(user->getFd()) == NULL){
-			sendMessage(event, ERR_NOTINCHNL);
+			sendMessage_error(user->getNickname(), event, " :You're not on that channel", 441);
 			return;
 		}
 
 		if (targetChannel->isOperator(user) == false){
-			sendMessage(event, ERR_NOTCHNLOPER);
+			sendMessage_error(user->getNickname(), event, " :You're not channel operator", 482);
 			return;
 		}
 

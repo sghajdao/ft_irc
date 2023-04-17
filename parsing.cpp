@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/16 22:23:05 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/17 15:38:18 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ std::vector<std::string> Server::split(const std::string& str, const char delime
     size_t cursorPos = 0;
     size_t delimeterPos;
 
-    while ((delimeterPos = str.find(delimeter, cursorPos)) != std::string::npos) { // TODO nops c++20
+    while ((delimeterPos = str.find(delimeter, cursorPos)) != std::string::npos) {
         splited.push_back(str.substr(cursorPos, delimeterPos - cursorPos));
         while (str.at(delimeterPos) == delimeter) {
             if (++delimeterPos == str.length()) return splited;
@@ -162,8 +162,12 @@ void Server::cmdPrivmsg(User *user, const struct kevent& event) {
 			Channel *targetChannel;
         	targetChannel = findChannelByName(targetName);
 			if (targetChannel == NULL) {
-			sendMessage_error(user->getNickname(), event, ERR_NOSUCHCHNL, 401);
-			continue;
+				sendMessage_error(user->getNickname(), event, ERR_NOSUCHCHNL, 401);
+				continue;
+			}
+			if (targetChannel->findUserByNick(user->getNickname()) == NULL) {
+				sendMessage_error(user->getNickname(), event, ERR_NOTINCHNL, 401);
+				continue;
 			}
 			targetChannel->broadcast(user , this, "", 0);
 		}
@@ -332,10 +336,6 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 				user->addChannelUser(name_channel[i]);
 				user->addChannelOperator(name_channel[i]);
 				channel->addOperators(event.ident, user);
-				channel->setMode("+o");
-				// channel->setFoundtopic(false);
-				// channel->setFindPass(false);
-				// channel->setInvit(false);
 				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
 				std::vector<std::string> vect;
@@ -354,11 +354,6 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 				channel->addUser(event.ident, user);
 				user->addChannelUser(name_channel[i]);
 				channel->addOperators(event.ident, user);
-				channel->setMode("+k");
-				channel->setMode("+o");
-				// channel->setFoundtopic(false);
-				// channel->setFindPass(true);
-				// channel->setInvit(false);
 				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
 				std::vector<std::string> vect;
@@ -550,7 +545,12 @@ void Server::cmdMode(User *user, const struct kevent& event, std::vector<std::st
 			}
 		}
 		else if(tab.size() == 1)
+		{
+			if (it->second->getMode().empty())
+				sendMessage_error(user->getNickname(), event, " :No mode in this channel ", 916);
+			else
 				it->second->broadcast(user, this, " MODE " + it->second->getMode(), 3);
+		}
 	}
 	else
 		sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403);
@@ -666,5 +666,5 @@ void Server::cmdQuit(User *user, const struct kevent& event, std::vector<std::st
 		delete it1->second;
 		_allUser.erase(it1);
 	}
-	// close(user->getFd());
+	std::cout << "client disconnected: " << event.ident << '\n';
 }

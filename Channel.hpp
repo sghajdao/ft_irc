@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/16 18:03:01 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/17 15:38:37 by sghajdao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,16 +30,13 @@ class Channel {
     bool _foundtopic;
     bool _invit;
 		std::map<int, User *> _userList;
-    // std::map<int, User *> members;
 		std::map<int, User *> _operators;
     std::vector<std::string> _invite;
     std::vector<std::string> _modeOfChannel;
-		// std::map<int, User *> bans;
 
     public:
         Channel(void);
         Channel(std::string name, std::string password);
-        // Channel(const Channel& channel);
         Channel& operator=(const Channel& channel);
         Channel(const std::string& name);
         ~Channel();
@@ -58,10 +55,8 @@ class Channel {
         std::string getPassword(void);
         const std::string& getName(void) const;
         const std::vector<std::string> getUserList(void) const;
-        // void setUserList(const User *user);
         std::vector<std::string>  getAllUser();
         const std::string    getUser(int fd);
-        // void    getOperator(void);
         std::map<int, User *>    addSecondOperators(void);
         std::string getSecondOperator(void);
         std::string getPassword() const;
@@ -71,7 +66,6 @@ class Channel {
         void deleteOperator(int clientFd);
         User* findUserByFd(const int clientFd);
         User* findSecondUser(std::string nick);
-        // User* findFirstUser();
         bool findUserIfExistByFd(const int clientFd);
         bool findUserIfExistByNick(std::string nick);
         bool findOperatorIfExist(const int clientFd);
