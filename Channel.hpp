@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:01 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:49:23 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/16 18:03:01 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Channel {
     // std::map<int, User *> members;
 		std::map<int, User *> _operators;
     std::vector<std::string> _invite;
+    std::vector<std::string> _modeOfChannel;
 		// std::map<int, User *> bans;
 
     public:
@@ -61,7 +62,6 @@ class Channel {
         std::vector<std::string>  getAllUser();
         const std::string    getUser(int fd);
         // void    getOperator(void);
-        void    getInvite(void);
         std::map<int, User *>    addSecondOperators(void);
         std::string getSecondOperator(void);
         std::string getPassword() const;
@@ -81,8 +81,12 @@ class Channel {
         int getFdOfUser(std::string nick);
         int getFdOfOperator(std::string nick);
         bool isOperator(User *user);
+        void    getInvite(void);
         int checkInvit(std::string nick);
         void deleteInvite(std::string nickname);
+        void deleteMode(std::string mode);
+        void setMode(std::string mode);
+        std::string getMode(void);
         User* findFirstUserbyNick(std::string nick);
         void setOperator();
 };

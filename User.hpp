@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:38 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:49:58 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/16 22:04:11 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ class User {
 		void setRealname(const std::string& realname);
 		void setIsQuiting(void);
 		void setIsUser(void);
-		void setIsPass(void);
+		void setIsPass(bool x);
 		void setIsNick(void);
 		void setRegistred(void);
 		void setFd(int fd);

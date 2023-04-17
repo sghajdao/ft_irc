@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:27 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/14 00:51:21 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/16 22:05:30 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,16 @@
 
 
 User::User(int fd, const std::string& host) : _sd(fd), _host(host), _isQuiting(false) {
-
+    _pass = 0;
 }
 
 User::~User() {
     close(_sd);
 }
 
-User::User(void){}
+User::User(void){
+    _pass = 0;
+}
 
 int User::getFd(void) const {
     return _sd;
@@ -158,8 +160,8 @@ void User::setIsUser(void) {
     _user = true;
 }
 
-void User::setIsPass(void) {
-    _pass = true;
+void User::setIsPass(bool x) {
+    _pass = x;
 }
 
 void User::setIsNick(void) {

@@ -6,7 +6,7 @@
 /*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:10:10 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/15 15:58:48 by ibenmain         ###   ########.fr       */
+/*   Updated: 2023/04/16 22:23:05 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,7 +282,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 					
 				}
 				else
-					sendMessage_error(user->getNickname(), event, ERR_BADCHANNELKEY, 475);
+					sendMessage_error(user->getNickname(), event, " :Cannot join channel +k", 475);
 			}
 			else
 			{
@@ -297,12 +297,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 						str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
 						vect = it->second->getAllUser();
 						for (size_t i = 0; i != vect.size(); i++)
-						{
-							if (i == 0)
-								str += vect[i];
-							else
-								str += " " + vect[i];
-						}
+							i == 0 ? str += vect[i] : str += " " + vect[i];
 						str += "\n366 " + user->getUsername() + " " + it->second->getName() + " :End of NAMES list.";
 						user->addToReplyBuffer(str + "\n");
 					}
@@ -318,12 +313,7 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 					str = "353 " + user->getUsername() + " = " + it->second->getName() + " :";
 					vect = it->second->getAllUser();
 					for (size_t i = 0; i != vect.size(); i++)
-					{
-						if (i == 0)
-							str += vect[i];
-						else
-							str += " " + vect[i];
-					}
+						i == 0 ? str += vect[i] : str += " " + vect[i];
 					str += "\n366 " + user->getUsername() + " " + it->second->getName() + " :End of NAMES list.";
 					user->addToReplyBuffer(str + "\n");
 				}
@@ -342,20 +332,16 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 				user->addChannelUser(name_channel[i]);
 				user->addChannelOperator(name_channel[i]);
 				channel->addOperators(event.ident, user);
-				channel->setFoundtopic(false);
-				channel->setFindPass(false);
-				channel->setInvit(false);
+				channel->setMode("+o");
+				// channel->setFoundtopic(false);
+				// channel->setFindPass(false);
+				// channel->setInvit(false);
 				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
 				std::vector<std::string> vect;
 				vect = channel->getAllUser();
 				for (size_t i = 0; i != vect.size(); i++)
-				{
-					if (i == 0)
-						str += vect[i];
-					else
-						str += " " + vect[i];
-				}
+					i == 0 ? str += vect[i] : str += " " + vect[i];
 				str += "\n366 " + user->getUsername() + " " + name_channel[i] + " :End of NAMES list.";
 				user->addToReplyBuffer(str + "\n");
 			}
@@ -368,20 +354,17 @@ void Server::cmdJoin(User *user, const struct kevent& event, std::vector<std::st
 				channel->addUser(event.ident, user);
 				user->addChannelUser(name_channel[i]);
 				channel->addOperators(event.ident, user);
-				channel->setFoundtopic(false);
-				channel->setFindPass(true);
-				channel->setInvit(false);
+				channel->setMode("+k");
+				channel->setMode("+o");
+				// channel->setFoundtopic(false);
+				// channel->setFindPass(true);
+				// channel->setInvit(false);
 				_allChannel.insert(std::make_pair(name_channel[i], channel));
 				channel->broadcast(user, this, "",  1);
 				std::vector<std::string> vect;
 				vect = channel->getAllUser();
 				for (size_t i = 0; i != vect.size(); i++)
-				{
-					if (i == 0)
-						str += vect[i];
-					else
-						str += " " + vect[i];
-				}
+					i == 0 ? str += vect[i] : str += " " + vect[i];
 				str += "\n366 " + user->getUsername() + " " + name_channel[i] + " :End of NAMES list.";
 				user->addToReplyBuffer(str + "\n");
 				x = x - 1;
@@ -422,7 +405,7 @@ void Server::cmdPart(User *user, const struct kevent& event, std::vector<std::st
 				}
 				it->second->deleteUser(user->getFd());
 				it->second->deleteOperator(user->getFd());
-				// it->second->deleteInvite(user->getNickname());
+				it->second->deleteInvite(user->getNickname());
 				user->deleteChannelUser(channel_leave[i]);
 				if (it->second->_userList.size() != 0 && !it->second->findOperatorIfExist(user->getFd()))
 				{
@@ -439,7 +422,7 @@ void Server::cmdPart(User *user, const struct kevent& event, std::vector<std::st
 					it->second->broadcast(user, this, "", 2);
 				}
 				it->second->deleteUser(user->getFd());
-				// it->second->deleteInvite(user->getNickname());
+				it->second->deleteInvite(user->getNickname());
 				user->deleteChannelUser(channel_leave[i]);
 			}
 			else
@@ -461,85 +444,113 @@ void Server::cmdMode(User *user, const struct kevent& event, std::vector<std::st
 	std::string str;
 	User *tmp;
 
-	if (tab.size() < 2)
-		return;
-	if (tab.empty() || tab.size() > 3)
+	/*if (tab.size() < 2)
+		return;*/
+	if (tab.empty()/* || tab.size() > 3*/)
 		return(sendMessage_error(user->getNickname(), event, " :More parameters", 461));
 	it = _allChannel.find(tab[0]);
 	if (it != _allChannel.end())
 	{
-		if (tab[1] == "+k")
+		if (tab.size() == 3)
 		{
-			if (it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 1)
+			if (tab[1] == "+k")
 			{
-				it->second->editPassword(tab[2]);
-				it->second->broadcast(user, this, " MODE " + it->second->getName() + " +k " + tab[2], 3);
-			}
-			else if(it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 0)
-			{
-				it->second->editPassword(tab[2]);
-				it->second->setFindPass(true);
-				it->second->broadcast(user, this, " MODE " + it->second->getName() + " +k " + tab[2], 3);
-			}
-			else
-				sendMessage_error(user->getNickname(), event, " You're not channel operator :", 916);
-		}
-		else if (tab[1] == "-k")
-		{
-			if (it->second->findOperatorIfExist(user->getFd()))
-			{
-				it->second->deletePassword();
-				it->second->setFindPass(false);
-				it->second->broadcast(user, this, " MODE " + it->second->getName() + " -k " + tab[2], 3);
-			}
-			else
-				sendMessage_error(user->getNickname(), event, " :Not a operator in this channel", 912);
-		}
-		else if(tab[1] == "+o")
-		{
-			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
-			{
-				if (it->second->findOperatorIfExistByNick(tab[2]))
-					return (sendMessage_error(user->getNickname(), event, " :You are operator in this channel", 912));
-				else if (it->second->findUserIfExistByNick(tab[2]))
+				if (it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 1)
 				{
-					it->second->addOperators(it->second->getFdOfUser(tab[2]), it->second->findFirstUserbyNick(tab[2]));
-					it->second->broadcast(user, this, " MODE " + it->second->getName() + " +o " + tab[2], 3);
+					it->second->editPassword(tab[2]);
+					it->second->broadcast(user, this, " MODE EDIT " + it->second->getName() + " +k " + tab[2], 3);
+				}
+				else if(it->second->findOperatorIfExist(user->getFd()) && it->second->getFindPass() == 0)
+				{
+					it->second->editPassword(tab[2]);
+					it->second->setMode("+k");
+					it->second->setFindPass(true);
+					it->second->broadcast(user, this, " MODE ADD PASSWORD " + it->second->getName() + " +k " + tab[2], 3);
 				}
 				else
-					sendMessage_error(tab[2], event, " :You are not a member in this channel", 912);
+					sendMessage_error(user->getNickname(), event, " You're not channel operator :", 916);
 			}
-			else
-				sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 912);
-		}
-		else if(tab[1] == "-o")
-		{
-			if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
+			else if (tab[1] == "-k")
 			{
-				if (it->second->_operators.size() == 1 && it->second->_userList.size() == 1)
-					return(sendMessage_error(user->getNickname(), event, " :You can't delete all operator", 912));
-				else if (it->second->findOperatorIfExistByNick(tab[2]))
+				if (it->second->findOperatorIfExist(user->getFd()))
 				{
-					it->second->deleteOperator(it->second->getFdOfUser(tab[2]));
-					it->second->broadcast(user, this, " MODE " + it->second->getName() + " -o " + tab[2], 3);
+					it->second->deletePassword();
+					it->second->setFindPass(false);
+					it->second->deleteMode("+k");
+					it->second->broadcast(user, this, " MODE DELETE PASSWORD " + it->second->getName() + " -k " + tab[2], 3);
 				}
-				if (it->second->_operators.size() == 0)
-				{
-					tmp = it->second->findSecondUser(tab[2]);
-					it->second->addOperators(tmp->getFd(), tmp);
-				}
+				else
+					sendMessage_error(user->getNickname(), event, " :Not a operator in this channel", 912);
 			}
-			else
-				sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 916);
+			else if(tab[1] == "+o")
+			{
+				if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
+				{
+					if (it->second->findOperatorIfExistByNick(tab[2]))
+						return (sendMessage_error(user->getNickname(), event, " :You are operator in this channel", 912));
+					else if (it->second->findUserIfExistByNick(tab[2]))
+					{
+						it->second->addOperators(it->second->getFdOfUser(tab[2]), it->second->findFirstUserbyNick(tab[2]));
+						it->second->setMode("+o");
+						it->second->broadcast(user, this, " MODE ADD OPERATOR " + it->second->getName() + " +o " + tab[2], 3);
+					}
+					else
+						sendMessage_error(tab[2], event, " :You are not a member in this channel", 912);
+				}
+				else
+					sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 912);
+			}
+			else if(tab[1] == "-o")
+			{
+				if (it->second->findUserIfExistByFd(user->getFd()) && it->second->findOperatorIfExist(user->getFd()))
+				{
+					if (it->second->_operators.size() == 1 && it->second->_userList.size() == 1)
+						return(sendMessage_error(user->getNickname(), event, " :You can't delete all operator", 912));
+					else if (it->second->findOperatorIfExistByNick(tab[2]))
+					{
+						it->second->deleteOperator(it->second->getFdOfUser(tab[2]));
+						it->second->deleteMode("+o");
+						it->second->broadcast(user, this, " MODE " + it->second->getName() + " -o " + tab[2], 3);
+					}
+					if (it->second->_operators.size() == 0)
+					{
+						tmp = it->second->findSecondUser(tab[2]);
+						it->second->addOperators(tmp->getFd(), tmp);
+					}
+				}
+				else
+					sendMessage_error(user->getNickname(), event, " :You're not channel operator ", 916);
+			}
 		}
-		else if (tab[1] == "+t")
-			it->second->setTopic(true);
-		else if (tab[1] == "-t")
-			it->second->setTopic(false);
-		else if (tab[1] == "+i")
-			it->second->setInvit(true);
-		else if (tab[1] == "-i")
-			it->second->setInvit(false);
+		else if(tab.size() == 2)
+		{
+			if (tab[1] == "+t")
+			{
+				it->second->setTopic(true);
+				it->second->setMode("+t");
+				it->second->broadcast(user, this, " MODE " + it->second->getName() + " +t ", 3);
+			}
+			else if (tab[1] == "-t")
+			{
+				it->second->setTopic(false);
+				it->second->deleteMode("+t");
+				it->second->broadcast(user, this, " MODE " + it->second->getName() + " -t ", 3);
+			}
+			else if (tab[1] == "+i")
+			{
+				it->second->setInvit(true);
+				it->second->setMode("+i");
+				it->second->broadcast(user, this, " MODE " + it->second->getName() + " +i ", 3);
+			}
+			else if (tab[1] == "-i")
+			{
+				it->second->setInvit(false);
+				it->second->deleteMode("+i");
+				it->second->broadcast(user, this, " MODE " + it->second->getName() + " -i ", 3);	
+			}
+		}
+		else if(tab.size() == 1)
+				it->second->broadcast(user, this, " MODE " + it->second->getMode(), 3);
 	}
 	else
 		sendMessage_error(tab[0], event, ERR_NOSUCHCHANNEL, 403);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 01:11:04 by ibenmain          #+#    #+#             */
-/*   Updated: 2023/04/15 17:08:11 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/16 18:03:33 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ Channel::Channel(std::string name, std::string password){
     _name = name;
     _password = password;
     _nametopic = "";
-    _findPass = 0;
+    _findPass = 1;
     _topic = 0;
     _invit = 0;
 };
@@ -44,7 +44,7 @@ void Channel::broadcast(User *user ,Server *server, std::string option, int flag
     const std::string msg = server->createReplyForm(user);
 
     for(it = _userList.begin(); it != _userList.end(); ++it) {
-        if (it->second->getNickname() == user->getNickname() && flag == 0) continue;
+        // if (it->first == ignoreFd) continue;
         if (flag == 0)
             it->second->addToReplyBuffer(server->createReplyForm(user));
         else if (flag == 1)
@@ -233,12 +233,6 @@ const std::string    Channel::getUser(int fd)
     return(it->second->getNickname());
 }
 
-void    Channel::getInvite(void)
-{
-    for (size_t i = 0; i < _invite.size(); i++)
-        std::cout << "Invite: " << _invite[i] << std::endl;
-}
-
 std::string    Channel::getSecondOperator(void)
 {
      std::map<int, User *>::iterator it;
@@ -336,6 +330,12 @@ int Channel::checkInvit(std::string nick)
     return (0);
 }
 
+void    Channel::getInvite(void)
+{
+    for (size_t i = 0; i < _invite.size(); i++)
+        std::cout << "Invite: " << _invite[i] << std::endl;
+}
+
 void Channel::deleteInvite(std::string nickname)
 {
   std::vector<std::string>::iterator it;
@@ -343,4 +343,26 @@ void Channel::deleteInvite(std::string nickname)
   it = find(_invite.begin(), _invite.end(), nickname);
     if (it != _invite.end())
         _invite.erase(it);
+}
+
+std::string     Channel::getMode(void)
+{
+    std::string str;
+    for (size_t i = 0; i < _modeOfChannel.size(); i++)
+        str = str + _modeOfChannel[i];
+    return (str);
+}
+
+void    Channel::setMode(std::string mode)
+{
+    _modeOfChannel.push_back(mode);
+}
+
+void Channel::deleteMode(std::string mode)
+{
+  std::vector<std::string>::iterator it;
+
+  it = find(_modeOfChannel.begin(), _modeOfChannel.end(), mode);
+    if (it != _modeOfChannel.end())
+        _modeOfChannel.erase(it);
 }

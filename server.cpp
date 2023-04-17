@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sghajdao <sghajdao@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ibenmain <ibenmain@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/28 05:47:13 by mlalouli          #+#    #+#             */
-/*   Updated: 2023/04/15 17:01:16 by sghajdao         ###   ########.fr       */
+/*   Updated: 2023/04/16 23:34:01 by ibenmain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Server::Server(int port, std::string password): _sd(-1), _kq(-1), _port(port), _
 	if (setsockopt(_sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 		throw std::runtime_error("Error while setting socket options...");
 	}
+
 	memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -72,7 +73,8 @@ void Server::createNewClientSocket(void) {
 		close(clientSocket);
 		return ;
 	}
-	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+	if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
+		shutDown("fcntl() error");
 	// if (getnameinfo((struct sockaddr *)&clientAddr, sizeof(clientAddr), hostStr, INET_ADDRSTRLEN, NULL, NI_MAXSERV, NI_NUMERICSERV) < 0) {
 	// 	std::cout << "Error while getting hostname on new client..." << std::endl;
 	// 	return ;
@@ -80,11 +82,10 @@ void Server::createNewClientSocket(void) {
 	std::cout << hostStr << std::endl;
 	inet_ntop(AF_INET, &clientAddr.sin_addr, hostStr, INET_ADDRSTRLEN);
 	std::cout << "accept new client: " << clientSocket << " / Host : " << hostStr << std::endl;
-	fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-
+	if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
+		shutDown("fcntl() error");
 	updateEvents(clientSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	updateEvents(clientSocket, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-
 	user = new User(clientSocket, hostStr);
 	_allUser.insert(std::make_pair(clientSocket, user));
 }
@@ -127,6 +128,7 @@ void Server::recvClientData(const struct kevent& event) {
 		targetUser->addToCmdBuffer(buf);
 		str = buf;
 		if (str[5] == ':') {str.erase(str.begin() + 5);}
+		// std::cout << ":: " + str << std::endl;
 		handleCmd(targetUser, event);
 	}
 	// targetUser->clearCmdBuffer();
@@ -168,7 +170,7 @@ void	Server::checkPassword(std::vector<std::string> tab, User *user, const struc
 		if (tab[0].compare(getpassword()) == 0)
 		{
 	 		user->setPassword(tab[0]);
-			user->setIsPass();
+			user->setIsPass(1);
 		}
 		else
 	 		sendMessage_error(user->getNickname(), event, ERR_PASSWDMISMATCH, 464);
@@ -223,16 +225,24 @@ void	Server::__parssingCommand(User* user, const struct kevent& event)
 {
 	if (!user->getRegistred())
 	{
-		if ((_command != "PASS" && _command != "pass") && (_command != "USER" && _command != "user") && (_command != "NICK" && _command != "nick"))
-			sendMessage_error(user->getNickname(), event, ERR_REGISTERED, 000);
-		else if (_command == "PASS" || _command != "pass"|| _command == "USER" || _command != "user" || _command == "NICK" || _command != "nick")
+		if (user->getIsPass() == 0)
 		{
-			if ((_command.compare("PASS") == 0 || _command.compare("pass") == 0) && !user->getIsPass())
-				Server::checkPassword(_params, user, event);
-			else if((_command.compare("USER") == 0 || _command.compare("user") == 0) && !user->getIsUser())
-				Server::checkUser(_params, user, event);
-			else if(_command.compare("NICK") == 0 || _command.compare("nick") == 0)
-				Server::checkNick(_params, user, event);
+			if (_command != "PASS" && _command != "pass")
+				sendMessage_error(user->getNickname(), event, " :You must registred entre command <PASS>", 000);
+			else if ((_command.compare("PASS") == 0 || _command.compare("pass") == 0))
+					Server::checkPassword(_params, user, event);
+		}
+		else
+		{
+			if ((_command != "USER" && _command != "user") && (_command != "NICK" && _command != "nick"))
+				sendMessage_error(user->getNickname(), event, " :You must registred entre command <NICK> <USER>", 000);
+			else if (_command == "USER" || _command != "user" || _command == "NICK" || _command != "nick")
+			{
+				if((_command.compare("USER") == 0 || _command.compare("user") == 0) && !user->getIsUser())
+					Server::checkUser(_params, user, event);
+				else if(_command.compare("NICK") == 0 || _command.compare("nick") == 0)
+					Server::checkNick(_params, user, event);
+			}
 		}
 		if (user->getIsNick() && user->getIsUser() && user->getIsPass())
 			Server::authentication(_params, user, event);
